@@ -1,16 +1,21 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 from .models import Post
-# Create your views here.
-def index(request):
-    posts = Post.objects.all()
-    context = {
-        'posts' : posts,
-    }
-    return render(request, 'pickerapp/index.html', context)
+from .serializers import PostListSerializer, PostSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-def detail(request,pk):
-    post = Post.objects.get(pk = pk)
-    context = {
-        'post':post,
-    }
-    return render(request, 'pickerapp/index.html', context)
+
+# Create your views here.
+@api_view(['GET'])
+def post_list(request):
+    if request.method == 'GET':
+        posts = Post.objects.all()
+        serializer = PostListSerializer(posts, many=True)
+        return Response(serializer.data)
+
+@api_view(['GET'])
+def post_detail(request, post_pk):
+    post = Post.objects.get(pk=post_pk)
+    if request.method == 'GET':
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
