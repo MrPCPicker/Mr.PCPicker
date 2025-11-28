@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
-    path('pickerapp/', views.post_list),
-    path('pickerapp/<int:post_pk>/', views.post_detail),
+    path('', views.post_list), # READ(index), CREATE
+    path('<int:post_pk>/', views.post_detail), # READ(detail), UPDATE, DELETE
 ]
