@@ -1,0 +1,129 @@
+{
+  "status": "success",
+  "total_results": 1000,
+  "total_results_per_page": 10,
+  "total_pages": 100,
+  "page": 0,
+  "data": [
+    {
+      "Product": {
+        "id": "669101d7614447ed554641fd",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-02-14",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "669101d7614447ed554641fe",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-08-23",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "669101d7614447ed554641ff",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-08-24",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "669f82a520200e577207f05d",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-03-17",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66ab604293b0c6d5660f9ac2",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-03-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66ab604293b0c6d5660f9ac4",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-03-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66ae0318edd6751a7178ecbf",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66ae0318edd6751a7178ecc0",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66b0a61a92b6c3b9319d31d1",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-03-24",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "66bdd53a62988bd7cfddc057",
+        "Brand": "GIGABYTE",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-02-04",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    }
+  ]
+}
