@@ -19,6 +19,7 @@ typing_extensions==4.15.0
 tzdata==2025.2
 wcwidth==0.2.14
 djangorestframework==3.15.2
-#gms 연동 필요
-python-dotenv
-requests
+
+#데이터를 위한 pandas
+pandas
+openpyxl
