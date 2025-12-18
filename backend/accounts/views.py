@@ -5,7 +5,6 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth import update_session_auth_hash
 
-
 # Create your views here.
 def login(request):
     if request.method == 'POST':
