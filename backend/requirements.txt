@@ -22,3 +22,5 @@ djangorestframework==3.15.2
 
 pandas
 openpyxl
+dotenv
+requests
