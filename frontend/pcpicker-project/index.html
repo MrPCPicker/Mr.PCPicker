@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="">
   <head>
     <meta charset="UTF-8">
@@ -10,4 +10,214 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wireframe HTML</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #9b99b7;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      height: 60px;
+      background: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+    }
+
+    header button {
+      background: #5f5b8c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* ===== MAIN ===== */
+    main {
+      padding: 40px;
+      display: flex;
+      gap: 24px;
+    }
+
+    /* LEFT LIST */
+    .left {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      background: #ddd;
+      border-radius: 50%;
+    }
+
+    /* RIGHT DETAIL */
+    .right {
+      width: 60%;
+      background: rgba(255,255,255,0.2);
+      padding: 24px;
+      border-radius: 16px;
+    }
+
+    .detail-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal {
+      background: white;
+      width: 320px;
+      padding: 24px;
+      border-radius: 16px;
+    }
+
+    .modal h3 {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .modal button {
+      width: 100%;
+      padding: 10px;
+      background: #5f5b8c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .close {
+      background: none;
+      color: #888;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <strong>brix templates</strong>
+    <button onclick="openModal()">Login</button>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <!-- LEFT -->
+    <section class="left">
+      <div class="card">
+        <div class="avatar"></div>
+        <div>
+          <strong>Item Title</strong>
+          <p>Short description</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="avatar"></div>
+        <div>
+          <strong>Item Title</strong>
+          <p>Short description</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="avatar"></div>
+        <div>
+          <strong>Item Title</strong>
+          <p>Short description</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="right">
+      <div class="detail-box">
+        <h3>Detail Title</h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        </p>
+      </div>
+
+      <div class="detail-box">
+        <h3>More Info</h3>
+        <p>
+          Additional content goes here.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-bg" id="modal">
+    <div class="modal">
+      <h3>Login</h3>
+      <input type="text" placeholder="Email" />
+      <input type="password" placeholder="Password" />
+      <button>Login</button>
+      <button class="close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+  </script>
+
+</body>
 </html>
