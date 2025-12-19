@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import './assets/main.css' //여기서 CSS 전역 적용
 
 const app = createApp(App)
 const pinia = createPinia()
