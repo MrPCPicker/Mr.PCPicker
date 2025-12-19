@@ -1,10 +1,17 @@
 <template>
-  <div class="v1_148">
-    <RouterLink to="/" class="v1_170">Home</RouterLink>
-    <RouterLink to="/community" class="v1_175">Community</RouterLink>
-    <RouterLink to="/profile" class="v1_1150">My Profile</RouterLink>
-    <RouterLink to="/login" class="v1_191">Login</RouterLink>
-  </div>
+  <header class="header">
+    <div class="header-left">MR.PCPICKER</div>
+
+    <nav class="header-nav">
+      <RouterLink to="/">Home</RouterLink>
+      <RouterLink to="/community">Community</RouterLink>
+      <RouterLink to="/profile">My Profile</RouterLink>
+    </nav>
+
+    <RouterLink to="/login" class="header-login">
+      Login
+    </RouterLink>
+  </header>
 </template>
 
 <script setup>

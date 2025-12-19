@@ -1,19 +1,22 @@
 <template>
-  <div class="v1_147">
+  <div class="home">
     <Header />
-    <div class="v1_194">
-      <div class="v1_195"></div>
-    </div>
 
-    <span class="v1_197">
-      A dedicated team to grow your company
-    </span>
+    <!-- Hero Section -->
+    <section class="hero-wrapper">
+      <h1 class="hero-title">
+        Welcome to<br />
+        MR.PCPICKER
+      </h1>
 
-    <span class="v1_198">
-      Lorem ipsum dolor sit amet consectetur adipiscing eli mattis sit phasellus mollis sit aliquam sit nullam neque ultrices.
-    </span>
+      <p class="hero-desc">
+        PC 추천 서비스<br />
+        <br />
+        made by 이주선, 양새하
+      </p>
 
-    <SearchBar />
+      <SearchBar />
+    </section>
   </div>
 </template>
 
@@ -22,7 +25,6 @@ import Header from '@/components/Header.vue'
 import SearchBar from '@/components/SearchBar.vue'
 </script>
 
-
-<style scoped>
+<style>
 
 </style>
