@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!-- src/views/LoginView.vue -->
 <template>
   <div class="auth-container">
@@ -194,4 +195,18 @@ a {
 a:hover {
   text-decoration: underline;
 }
+=======
+<template>
+  <div>
+
+  </div>
+</template>
+
+<script setup>
+
+</script>
+
+<style scoped>
+
+>>>>>>> htmltovue
 </style>
