@@ -28,10 +28,13 @@ SECRET_KEY = 'django-insecure--l^9*doc(g2=+=ry%a^j4a9&=l^sd-kyhh0p6zs(57vi3z*psf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # 개발 환경에서만 사용하세요. 프로덕션에서는 구체적인 호스트를 지정하세요.
 
 
 # Application definition
+
+# Custom user model
+AUTH_USER_MODEL = 'accounts.User'
 
 INSTALLED_APPS = [
     'accounts',
@@ -39,8 +42,12 @@ INSTALLED_APPS = [
     'products',
     'gms',
 
+    # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
 
+    # Django built-in apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORS 미들웨어 추가 (가장 위에 위치해야 함)
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -132,3 +140,50 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# CORS 설정
+CORS_ALLOW_ALL_ORIGINS = True  # 개발 환경에서만 사용하세요. 프로덕션에서는 특정 도메인만 허용하세요.
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']  # Vue 개발 서버 주소
+
+# DRF 설정
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# JWT 설정
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
