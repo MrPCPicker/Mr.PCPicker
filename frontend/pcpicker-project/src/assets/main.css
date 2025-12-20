@@ -1,0 +1,231 @@
+/* =========================
+   Global Reset
+========================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #74cae9;
+  color: #1f2937;
+}
+
+/* =========================
+   Header
+========================= */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* z-index: 1000; */
+
+    height: 64px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+}
+
+.header-left {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 24px;
+}
+
+.header-nav a {
+  text-decoration: none;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.header-nav a.router-link-active {
+  color: #4f5dff;
+}
+
+.header-login {
+  background: #4f5dff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* =========================
+   Home Layout
+========================= */
+.home {
+  padding: 80px 100px;
+}
+
+/* =========================
+   Hero Section
+========================= */
+
+.hero-wrapper{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; 
+  justify-content: center;
+}
+
+.hero {
+  max-width: 600px;
+}
+
+.hero-title {
+  color: white;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hero-desc {
+  margin-top: 16px;
+  color: #d1d5db;
+  font-size: 16px;
+}
+
+/* =========================
+   Search Bar
+========================= */
+.search-bar {
+  margin-top: 32px;
+  width: 420px;
+  background: white;
+  border-radius: 40px;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  width: 100%;
+}
+
+/* =========================
+   Main Content Layout
+========================= */
+.content {
+  margin-top: 80px;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 40px;
+}
+
+/* =========================
+   List Section
+========================= */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.list-item {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.list-avatar {
+  width: 48px;
+  height: 48px;
+  background: #e5e7eb;
+  border-radius: 50%;
+}
+
+.list-title {
+  font-weight: 600;
+}
+
+.list-desc {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* =========================
+   Detail Section
+========================= */
+.detail {
+  background: #c3d2db;
+  border-radius: 24px;
+  padding: 32px;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.detail-desc {
+  color: #274b7e;
+  font-size: 15px;
+}
+
+/* =========================
+   Modal (Login / Signup)
+========================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  width: 360px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.modal input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.modal button {
+  width: 100%;
+  background: #4f5dff;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 16px;
+  cursor: pointer;
+}
