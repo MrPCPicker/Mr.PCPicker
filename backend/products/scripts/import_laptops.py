@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from pickerapp.models import Laptop
+from products.models import Laptop
 
 EXCHANGE_RATE = 16.5  # INR → KRW
 
@@ -13,7 +13,7 @@ def clean_text(value):
 
 def run():
     # 1. 엑셀 로드 및 결측치 기본 처리
-    df = pd.read_excel("pickerapp/data/laptop.xlsx")
+    df = pd.read_excel("products/data/laptop.xlsx")
     df = df.fillna("") # NaN을 빈 문자열로 일괄 변환 (AttributeError 방지)
 
     laptops = []
