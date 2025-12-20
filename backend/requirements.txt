@@ -24,3 +24,5 @@ pandas
 openpyxl
 dotenv
 requests
+django-cors-headers
+djangorestframework-simplejwt
