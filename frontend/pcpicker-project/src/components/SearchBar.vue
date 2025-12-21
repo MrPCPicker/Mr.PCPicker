@@ -30,7 +30,8 @@
 <script>
 export default {
   name: 'SearchBar',
-  emits: ['active-change', 'submit'],
+  // ✅ 더 이상 'submit' emit 안 함
+  emits: ['active-change'],
   data() {
     return {
       isExpanded: false,
@@ -81,11 +82,9 @@ export default {
       const query = this.inputValue.trim()
       if (!query) return
 
-      // 부모 컴포넌트에도 알려주고
-      this.$emit('submit', query)
       console.log('Searching:', query)
 
-      // 👉 추천 결과 페이지로 이동 (q 쿼리 파라미터에 담기)
+      // ✅ 여기서만 추천 페이지로 이동
       this.$router.push({
         name: 'Recommend',
         query: { q: query }

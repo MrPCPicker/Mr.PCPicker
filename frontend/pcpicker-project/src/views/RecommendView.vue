@@ -151,6 +151,10 @@ export default {
 
       try {
         const data = await fetchLaptopRecommendations(query.value)
+        if (!data) {
+          // 중복 호출 차단 등으로 null 반환 시
+          return
+        }
         results.value = data.results || []
         needs.value = data.needs || []
         summary.value = data.summary || ''

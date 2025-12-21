@@ -1,3 +1,4 @@
+# backend/gms/views.py
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -48,19 +49,21 @@ def recommend_laptops(request):
     GMS 를 한 번만 호출해 추천 결과를 반환.
     """
     query = (request.data.get("query") or "").strip()
+    print(f"[VIEW] recommend_laptops called, query='{query}'")
+
     if not query:
         return Response(
             {"detail": "query 필드는 필수입니다."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # 1) 후보 노트북 (개수 줄여서 토큰/크레딧 절약)
-    candidates = Laptop.objects.all()[:12]
+    # 1) 후보 노트북 (개수 줄여서 토큰/크레딧 절약)  🔻 12 → 8
+    candidates = Laptop.objects.all()[:8]
 
+    # JSON에 꼭 필요한 필드만 사용 (id, name, cpu, gpu, ram, storage, price)
     laptop_list = []
     for lap in candidates:
         name = getattr(lap, "name", None) or getattr(lap, "model_name", "")
-        brand = getattr(lap, "brand", "")
         cpu = getattr(lap, "cpu", "")
         gpu = getattr(lap, "gpu", "")
         ram = getattr(lap, "ram", "")
@@ -70,7 +73,6 @@ def recommend_laptops(request):
         laptop_list.append({
             "id": lap.id,
             "name": name,
-            "brand": brand,
             "cpu": cpu,
             "gpu": gpu,
             "ram": ram,
@@ -78,27 +80,22 @@ def recommend_laptops(request):
             "price": int(price) if price is not None else None,
         })
 
-    # 2) GMS 프롬프트 (짧게 다이어트)
+    # 2) GMS 프롬프트 (다이어트 버전)
     prompt = f"""
-당신은 노트북 쇼핑 어시스턴트입니다.
+당신은 노트북 추천 어시스턴트입니다.
+[요구사항]과 [후보 노트북 목록]을 보고 사용자에게 가장 잘 맞는 노트북 3대를 골라 주세요.
 
-1. 아래 [사용자 요구사항]과 [후보 노트북 JSON 목록]을 보고,
-   사용자에게 가장 잘 맞는 노트북 3대를 선택하세요.
-2. "needs"에는 사용자의 요구/상황을 개념적으로 개조식으로 정리합니다.
-   예: "대학생, 문서 작업 위주", "AfterEffect 영상 편집", "휴대성 중요"
-3. "recommends"에는 가능한 한 구체적인 사양 수치를 개조식으로 적습니다.
-   예: "RTX 4060 이상", "16GB RAM 이상", "512GB SSD 이상"
-4. "needs"와 "recommends" 항목의 문자열에는
-   불릿 기호(-, •, 숫자 등)를 넣지 말고, 문장만 작성하세요.
-   (프론트엔드에서 bullet 로 렌더링됩니다.)
+- "needs": 사용자의 상황/용도를 한 줄 개조식 목록으로 정리 (예: "대학생, 문서 작업 위주")
+- "recommends": 권장 사양을 수치 중심으로 개조식 작성 (예: "16GB RAM 이상")
+- needs / recommends 의 문자열에는 불릿 기호(-, •, 숫자.)를 넣지 말고 문장만 적으세요.
 
-[사용자 요구사항]
+[요구사항]
 {query}
 
-[후보 노트북 JSON 목록]
+[후보 노트북 목록]
 {json.dumps(laptop_list, ensure_ascii=False)}
 
-아래 JSON 형식으로만, 다른 설명 없이 출력하세요:
+아래 JSON 형식만, 추가 설명 없이 출력하세요:
 
 {{
   "choice_ids": [1, 2, 3],
@@ -108,17 +105,27 @@ def recommend_laptops(request):
 }}
 """
 
-    # ✅ 한 번만 GMS 호출
-    raw = call_gms_openai(prompt)
+    # ✅ GMS 호출에서 생길 수 있는 에러를 안전하게 처리
+    try:
+        raw = call_gms_openai(prompt)
+    except Exception as e:
+        print("[ERROR] GMS 호출 실패:", repr(e))
+        return Response(
+            {"detail": "GMS 호출 실패", "error": str(e)},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
 
+    # 3) GMS 가 준 텍스트를 JSON 으로 파싱
     try:
         gms_data = json.loads(raw)
     except Exception:
+        print("[ERROR] GMS 응답 JSON 파싱 실패. raw:", raw)
         return Response(
             {"detail": "GMS 응답 파싱 실패", "raw": raw},
             status=status.HTTP_502_BAD_GATEWAY,
         )
 
+    # 최대 3개까지 사용
     choice_ids = (gms_data.get("choice_ids") or [])[:3]
 
     # 개조식 문장만 남기기
@@ -126,7 +133,7 @@ def recommend_laptops(request):
     recommends = _normalize_lines(gms_data.get("recommends"))
     summary = gms_data.get("summary") or ""
 
-    # 3) 선택된 id 기준으로 실제 Laptop 조회
+    # 4) 선택된 id 기준으로 실제 Laptop 조회
     db_laptops = Laptop.objects.filter(id__in=choice_ids)
     by_id = {lap.id: lap for lap in db_laptops}
 

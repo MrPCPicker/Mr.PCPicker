@@ -21,7 +21,8 @@
 
           <!-- 오른쪽: SearchBar 영역 (수직 중앙, 오른쪽 절반 차지) -->
           <div class="hero-search">
-            <SearchBar @submit="handleSearch" />
+            <!-- ✅ 더 이상 @submit 없음 -->
+            <SearchBar />
           </div>
         </div>
       </section>
@@ -35,37 +36,6 @@ import SearchBar from '@/components/SearchBar.vue'
 export default {
   name: 'HomeView',
   components: { SearchBar },
-  methods: {
-    async handleSearch(searchQuery) {
-      try {
-        console.log('Searching for:', searchQuery)
-        
-        const response = await fetch('http://127.0.0.1:8000/gms/recommend-laptops/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: searchQuery
-          })
-        })
-        
-        if (!response.ok) {
-          throw new Error('Search failed')
-        }
-        
-        const recommendations = await response.json()
-        console.log('Recommendations:', recommendations)
-        
-        // TODO: Display recommendations to user
-        // this.$router.push('/recommendations')
-        
-      } catch (error) {
-        console.error('Search error:', error)
-        // TODO: Show error message to user
-      }
-    }
-  }
 }
 </script>
 

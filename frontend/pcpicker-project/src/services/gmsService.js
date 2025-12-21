@@ -8,27 +8,22 @@ const gmsClient = axios.create({
   timeout: 30000,
 })
 
-export async function fetchLaptopRecommendations(query) {
-  const response = await gmsClient.post('/gms/recommend-laptops/', {
-    // SearchBar 에서 받은 니즈 텍스트
-    query,
-  })
+let isLoading = false
 
-  // 예상 응답 형식:
-  // {
-  //   results: [
-  //     {
-  //       id: 1,
-  //       title: 'LG Gram 16 2024',
-  //       price: 1890000,
-  //       imageUrl: 'https://...',
-  //       specs: ['CPU: ...', 'RAM: ...', ...]
-  //     },
-  //     ...
-  //   ],
-  //   needs: ['...', '...'],
-  //   summary: '...',
-  //   recommends: ['...', '...']
-  // }
-  return response.data
+export async function fetchLaptopRecommendations(query) {
+  if (isLoading) {
+    console.warn('GMS 요청 중복 차단')
+    return null
+  }
+
+  isLoading = true
+  try {
+    const response = await gmsClient.post('/gms/recommend-laptops/', {
+      // SearchBar 에서 받은 니즈 텍스트
+      query,
+    })
+    return response.data
+  } finally {
+    isLoading = false
+  }
 }
