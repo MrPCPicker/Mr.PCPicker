@@ -1,67 +1,69 @@
-<!-- src/views/RegisterView.vue -->
 <template>
-  <div class="auth-container">
-    <h2>회원가입</h2>
-    <form @submit.prevent="handleRegister">
-      <div class="form-group">
-        <label>이름</label>
-        <input v-model="name" type="text" required />
+  <div class="profile-container">
+    <h2 class="title">프로필 정보</h2>
+
+    <div v-if="user" class="profile-card">
+      <!-- 프로필 이미지 -->
+      <div class="avatar">
+        <img
+          :src="user.profile_image || defaultAvatar"
+          alt="profile"
+        />
       </div>
-      <div class="form-group">
+
+      <!-- 아이디 -->
+      <div class="field">
         <label>아이디</label>
-        <input v-model="username" type="text" required />
+        <input type="text" :value="user.username" disabled />
       </div>
-      <div class="form-group">
-        <label>비밀번호</label>
-        <div class="password-input-container">
-          <input 
-            v-model="password" 
-            :type="showPassword ? 'text' : 'password'" 
-            required 
-          />
-          <button 
-            type="button" 
-            class="password-toggle"
-            @click="togglePasswordVisibility('password')"
-            :title="showPassword ? '비밀번호 숨기기' : '비밀번호 보기'"
-          >
-            <span v-if="showPassword">👁️</span>
-            <span v-else>👁️‍🗨️</span>
-          </button>
+
+      <!-- 이름 -->
+      <div class="field">
+        <label>이름</label>
+        <input v-model="updateForm.name" type="text" />
+      </div>
+
+      <!-- 이메일 -->
+      <div class="field">
+        <label>이메일</label>
+        <input v-model="updateForm.email" type="email" />
+
+        <!-- 비밀번호 확인 -->
+        <div class="form-group">
+          <label for="password2">비밀번호 확인</label>
+          <div class="password-input">
+            <input 
+              id="password2"
+              :type="showPassword2 ? 'text' : 'password'"
+              v-model="formData.password2"
+              class="form-input"
+              required
+            />
+            <button 
+              type="button" 
+              class="toggle-password"
+              @click="togglePasswordVisibility2"
+            >
+              <span v-if="showPassword2">👁️</span>
+              <span v-else>👁️‍🗨️</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
-        <label>비밀번호 확인</label>
-        <div class="password-input-container">
-          <input 
-            v-model="password2" 
-            :type="showPassword2 ? 'text' : 'password'" 
-            required 
-          />
-          <button 
-            type="button" 
-            class="password-toggle"
-            @click="togglePasswordVisibility('password2')"
-            :title="showPassword2 ? '비밀번호 숨기기' : '비밀번호 보기'"
-          >
-            <span v-if="showPassword2">👁️</span>
-            <span v-else>👁️‍🗨️</span>
-          </button>
+
+        <div v-if="error" class="error-message">
+          {{ error }}
         </div>
-      </div>
-      <button type="submit" :disabled="loading">
-        {{ loading ? '가입 중...' : '가입하기' }}
-      </button>
-      <div v-if="error" class="error">
-        <p v-if="error.detail">{{ error.detail }}</p>
-        <template v-else>
-          <p v-for="(errors, field) in error" :key="field">
-            {{ field }}: {{ Array.isArray(errors) ? errors[0] : errors }}
-          </p>
-        </template>
-      </div>
-      <p>이미 계정이 있으신가요? <router-link to="/login">로그인하기</router-link></p>
-    </form>
+
+        <button type="submit" class="submit-btn" :disabled="loading">
+          {{ loading ? '처리 중...' : '가입하기' }}
+        </button>
+
+        <div class="auth-footer">
+          이미 계정이 있으신가요? 
+          <router-link to="/login" class="auth-link">로그인하기</router-link>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -69,155 +71,127 @@
 import AuthService from '@/services/AuthService';
 
 export default {
+  name: 'RegisterView',
   data() {
     return {
-      name: '',
-      username: '',
-      password: '',
-      password2: '',
+      formData: {
+        name: '',
+        username: '',
+        email: '',
+        password: '',
+        password2: ''
+      },
       showPassword: false,
       showPassword2: false,
-      error: null,
-      loading: false
+      loading: false,
+      error: null
     };
   },
   methods: {
-    togglePasswordVisibility(field) {
-      if (field === 'password') {
-        this.showPassword = !this.showPassword;
-      } else if (field === 'password2') {
-        this.showPassword2 = !this.showPassword2;
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+        this.updateForm.name = res.data.name || ''
+        this.updateForm.email = res.data.email || ''
+      } catch (err) {
+        if (err.response?.status === 401) {
+          this.$router.push('/login')
+        }
       }
     },
-    async handleRegister() {
-      if (this.password !== this.password2) {
-        this.error = { password: ["비밀번호가 일치하지 않습니다."] };
-        return;
-      }
 
-      this.loading = true;
-      this.error = null;
-
+    async handleUpdate() {
       try {
-        const response = await AuthService.register(
-          this.name,
-          this.username,
-          this.password
-        );
-        
-        // If registration is successful and tokens are returned
-        if (response.data && response.data.tokens) {
-          // Save tokens to local storage
-          const userData = {
-            access: response.data.tokens.access,
-            refresh: response.data.tokens.refresh,
-            user: response.data.user
-          };
-          localStorage.setItem('user', JSON.stringify(userData));
-          
-          // Dispatch storage event to update auth state in Navbar
-          window.dispatchEvent(new Event('storage'));
-          
-          // Redirect to home page
-          this.$router.push('/');
-        } else {
-          // Fallback to login page if no tokens are returned
-          this.$router.push('/login');
-        }
-      } catch (error) {
-        this.error = error.response?.data || { detail: '회원가입에 실패했습니다. 다시 시도해주세요.' };
-      } finally {
-        this.loading = false;
+        await AuthService.updateProfile(this.updateForm)
+        this.updateError = ''
+        await this.loadUserProfile()
+        alert('프로필이 저장되었습니다.')
+      } catch (err) {
+        this.updateError = '프로필 수정에 실패했습니다.'
       }
-    }
-  }
-};
+    },
+
+    handleLogout() {
+      AuthService.logout()
+      this.$router.push('/login')
+    },
+
+    async handleDeleteAccount() {
+      if (!confirm('정말 탈퇴하시겠습니까?')) return
+      await AuthService.deleteAccount()
+      this.$router.push('/')
+    },
+  },
+}
 </script>
 
 <style scoped>
-/* Same styles as LoginView */
-.auth-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+.profile-container {
+  max-width: 500px;
+  margin: 40px auto;
 }
 
-.password-input-container {
-  position: relative;
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+}
+
+.avatar {
   display: flex;
-  align-items: center;
-}
-
-.password-input-container input {
-  width: 100%;
-  padding-right: 35px; /* Space for the toggle button */
-}
-
-.password-toggle {
-  position: absolute;
-  right: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  color: #666;
-  font-size: 16px;
-  outline: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  margin-bottom: 20px;
 }
 
-.password-toggle:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.avatar img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.field {
+  margin-bottom: 14px;
 }
 
-.form-group label {
+.field label {
   display: block;
-  margin-bottom: 5px;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-button {
+.field input {
   width: 100%;
   padding: 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #ddd;
 }
 
-button:hover {
-  background-color: #45a049;
+.save-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #111;
+  color: #fff;
+  border-radius: 8px;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.danger {
+  background: #e53935;
+  color: #fff;
 }
 
 .error {
   color: red;
   margin-top: 10px;
-}
-
-a {
-  color: #2196F3;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 </style>

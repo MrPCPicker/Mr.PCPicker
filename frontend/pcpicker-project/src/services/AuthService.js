@@ -135,6 +135,13 @@ class AuthService {
       return {};
     }
   }
+  // Get user profile (프로필 조회)
+  getProfile() {
+    return api.get('user/', {
+      headers: this.getAuthHeader(),
+    })
+  }
+
 }
 
 export default new AuthService();
