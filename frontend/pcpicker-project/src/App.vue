@@ -1,16 +1,6 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <template v-if="isAuthenticated">
-        <router-link to="/profile">Profile</router-link> |
-        <a href="#" @click.prevent="handleLogout">Logout</a>
-      </template>
-      <template v-else>
-        <router-link to="/login">Login</router-link> |
-        <router-link to="/register">Register</router-link>
-      </template>
-    </nav>
+    <!-- 네비 제거됨 -->
     <router-view />
   </div>
 </template>
@@ -43,40 +33,9 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left; /* center -> left 로 UI 맞춤 */
   color: #2c3e50;
-  margin-top: 60px;
 }
 
-nav {
-  padding: 30px;
-}
-
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-  margin: 0 10px;
-  text-decoration: none;
-}
-
-nav a.router-link-exact-active {
-  color: #42b983;
-}
-
-button {
-  cursor: pointer;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  margin: 5px;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.error {
-  color: #f44336;
-  margin: 10px 0;
-}
+/* 기존 nav, a 스타일 삭제됨 */
 </style>
