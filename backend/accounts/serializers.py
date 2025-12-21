@@ -22,12 +22,14 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('id', 'name', 'username', 'password', 'password2')
+        fields = ('id', 'name', 'username', 'email', 'profile_image', 'password', 'password2')
         extra_kwargs = {
-            'password': {'write_only': True},
-            'password2': {'write_only': True},
-            'name': {'required': True, 'allow_blank': False}
-        }
+        'password': {'write_only': True},
+        'password2': {'write_only': True},
+        'name': {'required': True},
+        'email': {'required': False},
+        'profile_image': {'required': False}
+    }
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -118,7 +120,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('name', 'username')
+        fields = ('name', 'username', 'email', 'profile_image')
         extra_kwargs = {
             'username': {'required': False},
             'name': {'required': False}

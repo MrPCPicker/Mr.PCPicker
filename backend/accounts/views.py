@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .serializers import (
     UserSerializer, 
     CustomTokenObtainPairSerializer,
@@ -49,10 +50,11 @@ class SignupView(APIView):
 
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get(self, request):
         user = request.user
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
         return Response(serializer.data)
     
     def put(self, request):
@@ -62,7 +64,7 @@ class UserDetailView(APIView):
             serializer.save()
             return Response({
                 "message": "User updated successfully",
-                "user": UserSerializer(user).data
+                "user": UserSerializer(user, context={'request': request}).data
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

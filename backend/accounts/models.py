@@ -40,12 +40,13 @@ class User(AbstractUser):
             'unique': _("A user with that username already exists."),
         },
     )
-    email = None
+    email = models.EmailField(_('email address'), blank=True, null=True)
     name = models.CharField(_('name'), max_length=100, blank=True)
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     
     objects = UserManager()
     
-    EMAIL_FIELD = None
+    EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
     
