@@ -1,31 +1,22 @@
 <template>
   <div id="app">
-    <!-- 네비 제거됨 -->
+    <!-- 모든 페이지에서 공통으로 보이는 네비게이션 바 -->
+    <Navbar />
+
+    <!-- 여기에서만 페이지 내용이 바뀜 -->
     <router-view />
   </div>
 </template>
 
 <script>
-import AuthService from '@/services/AuthService';
+import Navbar from '@/components/Navbar.vue'
 
 export default {
   name: 'App',
-  computed: {
-    isAuthenticated() {
-      return AuthService.getCurrentUser() !== null;
-    }
-  },
-  methods: {
-    async handleLogout() {
-      try {
-        await AuthService.logout();
-        this.$router.push('/login');
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
+  components: {
+    Navbar
   }
-};
+}
 </script>
 
 <style>
@@ -33,9 +24,7 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: left; /* center -> left 로 UI 맞춤 */
+  text-align: left;
   color: #2c3e50;
 }
-
-/* 기존 nav, a 스타일 삭제됨 */
 </style>

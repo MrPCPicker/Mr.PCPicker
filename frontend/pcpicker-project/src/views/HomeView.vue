@@ -1,32 +1,7 @@
 <!-- src/views/HomeView.vue -->
 <template>
   <div class="home">
-    <!-- Top Navigation -->
-    <header class="top-nav">
-      <div class="nav-inner">
-        <router-link to="/" class="brand">
-          <span class="brand-main">Mr.</span>
-          <span class="brand-accent">PC</span>
-          <span class="brand-sub">Picker</span>
-        </router-link>
-
-        <nav class="nav-links">
-          <router-link to="/" class="nav-link" exact>Home</router-link>
-          <router-link to="/community" class="nav-link">Community</router-link>
-        </nav>
-
-        <div class="nav-actions">
-          <template v-if="!isAuthenticated">
-            <router-link to="/login" class="nav-login">Login</router-link>
-            <router-link to="/register" class="nav-signup">Sign Up</router-link>
-          </template>
-          <template v-else>
-            <span class="welcome-text">Welcome back 👋</span>
-            <router-link to="/profile" class="nav-signup">My Page</router-link>
-          </template>
-        </div>
-      </div>
-    </header>
+    <!-- 네비게이션은 App.vue의 <Navbar />가 전역으로 담당 -->
 
     <!-- Hero Section -->
     <main>
@@ -55,17 +30,11 @@
 </template>
 
 <script>
-import AuthService from '@/services/AuthService'
 import SearchBar from '@/components/SearchBar.vue'
 
 export default {
   name: 'HomeView',
-  components: { SearchBar },
-  computed: {
-    isAuthenticated() {
-      return AuthService.getCurrentUser() !== null
-    }
-  }
+  components: { SearchBar }
 }
 </script>
 
@@ -76,90 +45,6 @@ export default {
   background-color: #ffffff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
-}
-
-/* ----- Top Nav ----- */
-.top-nav {
-  background-color: #ffffff;
-  border-bottom: 1px solid #f0f2f5;
-}
-
-.nav-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 18px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Brand */
-.brand {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  text-decoration: none;
-}
-.brand-main {
-  font-weight: 700;
-  font-size: 20px;
-  color: #121212;
-}
-.brand-accent {
-  font-weight: 800;
-  font-size: 20px;
-  color: #e12726;
-}
-.brand-sub {
-  font-weight: 500;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6a6a6a;
-}
-
-/* Nav links */
-.nav-links {
-  display: flex;
-  gap: 24px;
-  flex: 1;
-  justify-content: center;
-}
-.nav-link {
-  font-size: 14px;
-  text-decoration: none;
-  color: #6a6a6a;
-}
-.nav-link.router-link-exact-active {
-  color: #1e6fd7;
-}
-
-/* Nav actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.nav-login {
-  font-size: 14px;
-  color: #121212;
-  text-decoration: none;
-}
-.nav-signup {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 18px;
-  border-radius: 999px;
-  background-color: #121212;
-  color: #ffffff;
-  text-decoration: none;
-}
-.nav-signup:hover {
-  opacity: 0.9;
-}
-.welcome-text {
-  font-size: 13px;
-  color: #6a6a6a;
 }
 
 /* ----- HERO (메인) ----- */
