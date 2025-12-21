@@ -32,7 +32,8 @@
     <main>
       <section class="hero">
         <div class="hero-inner">
-          <div class="hero-copy">
+          <!-- 왼쪽: 문구 영역 (수직 중앙, 왼쪽 정렬, 이동 없음) -->
+          <div class="hero-text">
             <h1 class="hero-title">
               Build the right PC<br />
               for your needs
@@ -41,10 +42,11 @@
               스펙 비교부터 추천까지, Mr.PC Picker가<br />
               당신에게 가장 잘 맞는 데스크탑·노트북 구성을 찾아드립니다.
             </p>
+          </div>
 
-            <div class="hero-search">
-              <SearchBar />
-            </div>
+          <!-- 오른쪽: SearchBar 영역 (수직 중앙, 오른쪽 절반 차지) -->
+          <div class="hero-search">
+            <SearchBar />
           </div>
         </div>
       </section>
@@ -161,30 +163,34 @@ export default {
 }
 
 /* ----- HERO (메인) ----- */
-/* 풀블리드(화면 가로 100%) + 네비 아래부터 다 어둡게 */
 .hero {
   position: relative;
   left: 50%;
   right: 50%;
-  margin-left: -50vw;   /* 부모의 max-width와 상관없이 화면 전체로 */
+  margin-left: -50vw;
   margin-right: -50vw;
   width: 100vw;
 
   background-color: #2f3a45;
-  min-height: calc(100vh - 72px); /* 네비 높이 제외한 전체 높이 */
+  min-height: 680px;
   display: flex;
   justify-content: center;
 }
 
 .hero-inner {
   width: 100%;
+  max-width: 1120px;
   padding: 96px 48px 120px;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  align-items: center;          /* 상하 중앙 정렬 */
+  justify-content: space-between;
+  gap: 80px;
 }
 
-.hero-copy {
+/* 왼쪽 텍스트 영역: 항상 왼쪽 정렬 & 이동 없음 */
+.hero-text {
+  flex: 0 0 45%;
+  max-width: 520px;
   text-align: left;
 }
 
@@ -200,55 +206,33 @@ export default {
   font-size: 15px;
   line-height: 1.6;
   color: #d9d9d9;
-  margin-bottom: 32px;
+  margin-top: 8px;
 }
 
-/* 검색 바 pill 스타일 래퍼 */
+/* 오른쪽 SearchBar 영역: 오른쪽 절반 차지, 수직 중앙 */
 .hero-search {
-  background-color: #f4f6fa;
-  border-radius: 999px;
-  padding: 10px 20px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  flex: 0 0 45%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;          /* 검색창을 수직 중앙 */
 }
 
-/* SearchBar가 안에서 꽉 차게 */
-.hero-search :deep(*) {
+/* SearchBar 컴포넌트가 컬럼 안에서 꽉 차게 */
+.hero-search :deep(.search-bar) {
   width: 100%;
 }
 
-/* ----- Responsive ----- */
 @media (max-width: 768px) {
-  .nav-inner {
-    padding-inline: 16px;
-  }
-
-  .nav-links {
-    display: none;
-  }
-
-  .hero {
-    min-height: auto;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
-  }
-
   .hero-inner {
+    flex-direction: column;
+    gap: 40px;
     padding: 56px 16px 72px;
-    justify-content: center;
   }
 
-  .hero-copy {
-    max-width: 100%;
-    text-align: center;
-  }
-
-  .hero-title {
-    font-size: 30px;
-  }
-
+  .hero-text,
   .hero-search {
-    margin: 0 auto;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
 }
 </style>
