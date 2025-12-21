@@ -16,7 +16,7 @@ def call_gms_openai(prompt: str) -> str:
     }
 
     data = {
-        "model": "gpt-5-nano",   # ✅ gpt-4.1  → gpt-5-nano 로 변경
+        "model": "gpt-4.1",   # ✅ gpt-4.1  → gpt-5-nano 로 변경
         "input": prompt,
         "max_output_tokens": 400,  # ✅ 출력 토큰 상한 (필요시 더 줄여도 됨)
     }
