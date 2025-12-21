@@ -4,14 +4,17 @@
 
     <div class="profile-card">
       <!-- 프로필 이미지 -->
-      <div class="avatar" @click="triggerFileInput">
-        <div class="profile-image-wrapper">
+      <div class="avatar-container">
+        <div class="avatar" @click="triggerFileInput">
           <img 
-            :src="user.profileImage || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMCAyMWMtMi43Ni0yLjQ4LTYuMzktNC03Ljk5LTUgLS4gMS0uMDItLjAzLS4wNS0uMDgtLjA5LS4xNi0uMTgtLjM4LS4zNy0uNjItLjU0LS4yNC0uMTctLjUyLS4zMS0uODItLjM4LS4zLS4wNy0uNjItLjA2LS45My4wMi0uMzEuMDgtLjYuMjYtLjg1LjUxLS4yNS4yNS0uNDMuNTQtLjUxLjg1LS4wOC4zMS0uMDkuNjMtLjAyLjkzLjA3LjMuMjEuNTguMzguODIuMTcuMjQuMzIuNDYuNDguNjIuMDYuMDcuMDguMDYuMDkuMDVsLjA1LjA4YzEuNiAxIDUuMjMgMi41MiA3Ljk5IDUgLjY3LjYyIDEuMDkgMS40NiAxLjE4IDIuMzguMDkuOTItLjE0IDEuODEtLjY3IDJhMS45OSAxLjk5IDAgMCAxLTEuNTEuNzZINGE0IDQgMCAwIDEtNC00YzAtLjcxLjE0LTEuMzkuNDItMnoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjgiIHI9IjUiLz48L3N2Zz4='"
+            :src="user.profileImage || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMCAyMWMtMi43Ni0yLjQ4LTYuMzktNC03Ljk5LTUgLS4gMS0uMDItLjAzLS4wNS0uMDgtLjA5LS4xNi0uMTgtLjM4LS4zNy0uNjItLjU0LS4yNC0uMTctLjUyLS4zMS0uODItLjM4LS4zLS4wNy0uNjItLjA2LS45My4wMi0uMzEuMDgtLjYuMjYtLjg1LjUxLS4yNS4yNS0uNDMuNTQtLjUxLjg1LS4wOC4zMS0uMDkuNjMtLjAyLjkzLjA3LjMuMjEuNTguMzguODIuMTcuMjQuMzIuNDYuNDguNjIuMDYuMDcuMDguMDYuMDkuMDVsLjA1LjA4YzEuNiAxIDUuMjMgMi41MiA3Ljk5IDUgLjY3LjYyIDEuMDkgMS40NiAxLjE4IDIuMzguMDkuOTItLjE0IDEuODEtLjY3IDJhMS45OSAxLjk5IDAgMCAxLTEuNTEuNzZINGE0IDQgMCAwIDEtNC00YzAtLjcxLjE0LTEuMzkuNDItMXoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjgiIHI9IjUiLz48L3N2Zz4='"
             alt="프로필 사진"
             class="profile-image"
+            :key="user.profileImage"
           />
-          <div class="edit-icon">✏️</div>
+        </div>
+        <div class="edit-icon" @click="triggerFileInput">
+          <span>✏️</span>
         </div>
         <input 
           type="file" 
@@ -280,26 +283,45 @@ export default {
     },
 
     async updateProfileImage(file) {
-      const formData = new FormData();
-      formData.append('profile_image', file);
-      
-      try {
-        await axios.patch(
-          'http://localhost:8000/accounts/api/user/',
-          formData,
-          {
-            headers: {
-              ...AuthService.getAuthHeader(),
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        alert('프로필 사진이 변경되었습니다.');
-      } catch (error) {
-        console.error('프로필 사진 변경 실패:', error);
-        alert('프로필 사진 변경에 실패했습니다.');
+  const formData = new FormData();
+  formData.append('profile_image', file);
+  
+  try {
+    const response = await axios.put(  // Changed from patch to put
+      'http://localhost:8000/accounts/api/user/',
+      formData,
+      {
+        headers: {
+          ...AuthService.getAuthHeader(),
+          'Content-Type': 'multipart/form-data'
+        }
       }
-    },
+    );
+    
+    // Check if response and response.data exist
+    if (response && response.data) {
+      // Update user data with the response
+      this.user = { 
+        ...this.user, 
+        ...response.data.user,  // Updated to match backend response structure
+        // Add timestamp to prevent caching
+        profileImage: response.data.user.profile_image ? 
+          `${response.data.user.profile_image}?t=${new Date().getTime()}` : 
+          this.user.profileImage
+      };
+      alert('프로필 사진이 변경되었습니다.');
+    } else {
+      throw new Error('Invalid response from server');
+    }
+    } catch (error) {
+      console.error('프로필 사진 변경 실패:', error);
+      // Reset the file input to allow reselecting the same file
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
+      alert(`프로필 사진 변경에 실패했습니다: ${error.response?.data?.detail || error.message || '알 수 없는 오류가 발생했습니다.'}`);
+    }
+  },
 
     startEditing() {
       this.isEditing = true;
@@ -434,23 +456,28 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* 프로필 이미지 스타일 */
-.avatar {
+/* 프로필 이미지 컨테이너 */
+.avatar-container {
   position: relative;
   width: 120px;
   height: 120px;
   margin: 0 auto 25px;
-  cursor: pointer;
 }
 
-.profile-image-wrapper {
-  position: relative;
+/* 프로필 이미지 스타일 */
+.avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
   border: 3px solid #f0f0f0;
+  cursor: pointer;
   transition: all 0.3s;
+  position: relative;
+}
+
+.avatar:hover {
+  opacity: 0.9;
 }
 
 .profile-image {
@@ -458,30 +485,36 @@ export default {
   height: 100%;
   object-fit: cover;
   background-color: #f5f5f5;
+  display: block;
 }
 
+/* 연필 아이콘 스타일 */
 .edit-icon {
   position: absolute;
   bottom: 5px;
   right: 5px;
   background: white;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  border: 3px solid white;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  opacity: 0;
-  transition: opacity 0.3s;
+  z-index: 10;
+  transition: all 0.2s ease;
 }
 
-.avatar:hover .edit-icon {
-  opacity: 1;
+.edit-icon:hover {
+  transform: scale(1.1);
+  background: #45a049;
 }
 
-.avatar:hover .profile-image {
-  opacity: 0.8;
+.edit-icon span {
+  font-size: 16px;
+  color: white;
+  display: block;
+  line-height: 1;
 }
 
 /* 폼 스타일 */
