@@ -3,7 +3,7 @@
   <header class="top-nav">
     <div class="nav-inner">
 
-      <!-- 로고를 이미지로 교체 -->
+      <!-- 로고 -->
       <router-link to="/" class="brand-logo">
         <img
           src="@/assets/logo_transparent.png"
@@ -29,25 +29,51 @@
         </template>
 
         <template v-else>
-          <router-link to="/login" class="nav-login">Login</router-link>
-          <router-link to="/register" class="nav-signup">Sign Up</router-link>
+          <!-- 버튼 → 모달 오픈 -->
+          <button class="nav-login" @click="openLoginModal">
+            Login
+          </button>
+          <button class="nav-signup" @click="openRegisterModal">
+            Sign Up
+          </button>
         </template>
       </div>
     </div>
+
+    <!-- 로그인 모달 -->
+    <LoginModal
+      v-if="showLoginModal"
+      @close="closeLoginModal"
+      @logged-in="handleLoggedIn"
+      @open-register="openRegisterFromLogin"
+    />
+
+    <!-- 회원가입 모달 -->
+    <RegisterModal
+      v-if="showRegisterModal"
+      @close="closeRegisterModal"
+      @registered="handleRegistered"
+      @open-login="openLoginFromRegister"
+    />
   </header>
 </template>
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import AuthService from '@/services/AuthService'
+import LoginModal from '@/components/LoginModal.vue'
+import RegisterModal from '@/components/RegisterModal.vue'
 
 export default {
   name: 'Navbar',
+  components: {
+    LoginModal,
+    RegisterModal,
+  },
   setup() {
-    const router = useRouter()
-
     const isAuthenticated = ref(!!AuthService.getCurrentUser())
+    const showLoginModal = ref(false)
+    const showRegisterModal = ref(false)
 
     const updateAuthState = () => {
       isAuthenticated.value = !!AuthService.getCurrentUser()
@@ -68,22 +94,72 @@ export default {
       try {
         await AuthService.logout()
         updateAuthState()
-        router.push('/login')
+        // ❌ 여기서도 라우팅 절대 안 함
       } catch (error) {
         console.error('Logout error:', error)
       }
     }
 
+    // 모달 관련
+    const openLoginModal = () => {
+      showRegisterModal.value = false
+      showLoginModal.value = true
+    }
+
+    const closeLoginModal = () => {
+      showLoginModal.value = false
+    }
+
+    const openRegisterModal = () => {
+      showLoginModal.value = false
+      showRegisterModal.value = true
+    }
+
+    const closeRegisterModal = () => {
+      showRegisterModal.value = false
+    }
+
+    const openRegisterFromLogin = () => {
+      showLoginModal.value = false
+      showRegisterModal.value = true
+    }
+
+    const openLoginFromRegister = () => {
+      showRegisterModal.value = false
+      showLoginModal.value = true
+    }
+
+    const handleLoggedIn = () => {
+      updateAuthState()      // 네비 상태만 갱신
+      showLoginModal.value = false   // 모달만 닫기
+      // ❌ router.push('/profile') 같은 거 절대 금지
+    }
+
+    const handleRegistered = () => {
+      updateAuthState()
+      showRegisterModal.value = false
+      // ❌ 여기서도 페이지 이동 X
+    }
+
     return {
       isAuthenticated,
-      handleLogout
+      handleLogout,
+      showLoginModal,
+      showRegisterModal,
+      openLoginModal,
+      closeLoginModal,
+      openRegisterModal,
+      closeRegisterModal,
+      openRegisterFromLogin,
+      openLoginFromRegister,
+      handleLoggedIn,
+      handleRegistered,
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
-/* ----- Top Nav (HomeView 디자인 차용) ----- */
 .top-nav {
   background-color: #ffffff;
   border-bottom: 1px solid #f0f2f5;
@@ -98,7 +174,6 @@ export default {
   justify-content: space-between;
 }
 
-/* Brand Logo Area */
 .brand-logo {
   display: flex;
   align-items: center;
@@ -106,13 +181,12 @@ export default {
 }
 
 .logo-img {
-  height: 38px;        /* 원하는 크기로 조절 가능 */
+  height: 38px;
   width: auto;
   object-fit: contain;
   cursor: pointer;
 }
 
-/* Nav links (가운데) */
 .nav-links {
   display: flex;
   gap: 24px;
@@ -130,17 +204,25 @@ export default {
   color: #1e6fd7;
 }
 
-/* 오른쪽 액션 */
 .nav-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .nav-login {
   font-size: 14px;
   color: #121212;
-  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
 }
+
+.nav-login:hover {
+  text-decoration: underline;
+}
+
 .nav-signup {
   font-size: 14px;
   font-weight: 600;
@@ -149,6 +231,8 @@ export default {
   background-color: #121212;
   color: #ffffff;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
 }
 
 .nav-signup:hover {
@@ -160,7 +244,6 @@ export default {
   color: #6a6a6a;
 }
 
-/* Logout 버튼 */
 .nav-logout-btn {
   font-size: 13px;
   padding: 6px 12px;
@@ -177,7 +260,6 @@ export default {
   color: #111827;
 }
 
-/* 반응형 */
 @media (max-width: 768px) {
   .nav-links {
     display: none;
