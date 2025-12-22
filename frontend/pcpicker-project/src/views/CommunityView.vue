@@ -131,7 +131,7 @@ const fetchPosts = async (page = 1) => {
     totalPages.value = Math.ceil(totalPosts.value / 10);
     currentPage.value = page;
   } catch (error) {
-    console.error('게시글을 불러오는 중 오류가 발생했습니다:', error);
+     console.error('게시글을 불러오는 중 오류가 발생했습니다:', error);
     alert('게시글을 불러오는 중 오류가 발생했습니다.');
   } finally {
     loading.value = false;

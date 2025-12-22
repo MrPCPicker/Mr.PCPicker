@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API 기본 URL 설정
-const API_URL = '/api';
+// API 기본 URL 설정 - Django 백엔드 서버 주소로 설정
+const API_URL = 'http://localhost:8000';
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
@@ -27,6 +27,17 @@ apiClient.interceptors.request.use(
   }
 );
 
+// API 함수들
+export const auth = {
+  register: (userData) => apiClient.post('/accounts/api/register/', userData),
+  login: (credentials) => apiClient.post('/accounts/api/token/', credentials),
+  refreshToken: (refresh) => apiClient.post('/accounts/api/token/refresh/', { refresh }),
+  getProfile: () => apiClient.get('/accounts/api/user/'),
+  updateProfile: (userData) => apiClient.put('/accounts/api/user/', userData),
+  changePassword: (passwords) => apiClient.post('/accounts/api/change-password/', passwords),
+  deleteAccount: () => apiClient.delete('/accounts/api/user/delete/')
+};
+
 // 응답 인터셉터 (응답을 받은 후 실행됨)
 apiClient.interceptors.response.use(
   (response) => {
@@ -36,7 +47,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
     
     // 401 에러가 발생하고, 토큰 갱신이 아직 시도되지 않은 경우
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
       try {

@@ -43,7 +43,13 @@ const router = createRouter({
       name: 'Recommend',                // 🔹 SearchBar.vue 에서 쓰는 name
       component: RecommendView,
       meta: { requiresAuth: false }
-    }
+    },
+    {
+      path: '/community/write',
+      name: 'write-post',
+      component: () => import('@/views/WritePostView.vue'),
+      meta: { requiresAuth: true }
+    },
   ],
 })
 
