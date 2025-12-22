@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/accounts/api/';
 
-// Create axios instance with default config
+// axios 인스턴스 (프로필 조회 등에 사용)
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -12,9 +12,9 @@ const api = axios.create({
 });
 
 class AuthService {
-  // Login user
+  // 🔐 Login
   login(username, password) {
-    console.log('Login attempt with:', { username, password }); // Debug log
+    console.log('Login attempt with:', { username, password });
     return axios
       .post(API_URL + 'token/', { username, password })
       .then((response) => {
@@ -23,16 +23,19 @@ class AuthService {
           localStorage.setItem('user', JSON.stringify(response.data));
           // 전역 auth 변경 이벤트
           window.dispatchEvent(new Event('auth-changed'));
+          // axios 기본 헤더 세팅 (선택)
+          axios.defaults.headers.common['Authorization'] =
+            'Bearer ' + response.data.access;
         }
         return response.data;
       })
       .catch((error) => {
-        console.error('Login error:', error.response?.data);
+        console.error('Login error:', error.response?.data || error.message);
         throw error;
       });
   }
 
-  // Logout user
+  // 🚪 Logout
   logout() {
     const user = this.getCurrentUser();
     const headers =
@@ -54,16 +57,8 @@ class AuthService {
       });
   }
 
-  // Register new user
-  register(name, username, password) {
-    return axios.post(API_URL + 'register/', {
-      name,
-      username,
-      password: password1,
-      password2,
-      email
   /**
-   * Register new user
+   * 🧾 Register new user
    *
    * - 모달에서: AuthService.register(formData)
    *   -> { name, username, email, password, password2 }
@@ -83,7 +78,7 @@ class AuthService {
         password2: data.password2 ?? data.password,
       };
     } else {
-      // ✅ 옛 방식(파라미터 3개)도 호환
+      // ✅ 옛 방식(파라미터 3개) 호환
       payload = {
         name: nameOrData,
         username,
@@ -95,7 +90,7 @@ class AuthService {
     return axios.post(API_URL + 'register/', payload).then((response) => {
       const data = response.data;
 
-      // 🔹 백엔드에서 내려주는 형태:
+      // 백엔드 응답 예시:
       // { message, user: {...}, tokens: { access, refresh } }
       if (data.tokens && data.tokens.access) {
         const storedUser = {
@@ -103,14 +98,10 @@ class AuthService {
           refresh: data.tokens.refresh,
           user: data.user,
         };
-        // 로그인과 동일한 형태로 저장
-        localStorage.setItem('user', JSON.stringify(storedUser));
 
-        // Axios 디폴트 헤더에도 토큰 세팅 (선택이지만 편함)
+        localStorage.setItem('user', JSON.stringify(storedUser));
         axios.defaults.headers.common['Authorization'] =
           'Bearer ' + data.tokens.access;
-
-        // NavBar 등 업데이트
         window.dispatchEvent(new Event('auth-changed'));
       }
 
@@ -118,7 +109,7 @@ class AuthService {
     });
   }
 
-  // Get current user
+  // 현재 user 가져오기
   getCurrentUser() {
     try {
       const raw = localStorage.getItem('user');
@@ -128,14 +119,14 @@ class AuthService {
     }
   }
 
-  // Update user profile
+  // 프로필 업데이트
   updateProfile(userData) {
     return axios.put(API_URL + 'user/', userData, {
       headers: this.getAuthHeader(),
     });
   }
 
-  // Change password
+  // 비밀번호 변경
   changePassword(oldPassword, newPassword, newPassword2) {
     return axios.post(
       API_URL + 'change-password/',
@@ -150,7 +141,7 @@ class AuthService {
     );
   }
 
-  // Delete account and logout
+  // 회원 탈퇴
   async deleteAccount() {
     try {
       const response = await axios.delete(API_URL + 'user/delete/', {
@@ -170,18 +161,17 @@ class AuthService {
     }
   }
 
-  // Helper method to get auth header
+  // Authorization 헤더 생성
   getAuthHeader() {
     const raw = localStorage.getItem('user');
     const user = raw ? JSON.parse(raw) : null;
     if (user && user.access) {
       return { Authorization: 'Bearer ' + user.access };
-    } else {
-      return {};
     }
+    return {};
   }
 
-  // Get user profile (프로필 조회)
+  // 프로필 조회
   getProfile() {
     return api.get('user/', {
       headers: this.getAuthHeader(),

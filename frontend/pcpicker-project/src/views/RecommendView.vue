@@ -19,14 +19,11 @@
               class="product-card"
             >
               <div class="product-thumb">
+                <!-- 🔹 item.imageUrl이 있으면 그거, 없으면 index별 목업 이미지 3개 사용 -->
                 <img
-                  v-if="item.imageUrl"
-                  :src="item.imageUrl"
-                  :alt="item.title"
+                  :src="getThumbSrc(item, index)"
+                  :alt="item.title || '추천 노트북 목업 이미지'"
                 />
-                <div v-else class="thumb-placeholder">
-                  <span class="thumb-icon">💻</span>
-                </div>
 
                 <div class="price-tag">
                   {{ formatPrice(item.price) }}
@@ -67,7 +64,6 @@
 
         <!-- 오른쪽: GMS 요약 + 요구사항 편집 영역 -->
         <div class="right-column">
-          <!-- 상단: 사용자가 입력했던 요구사항을 그대로 보여주는 textarea -->
           <div class="summary-bubble">
             <textarea
               v-model="editableQuery"
@@ -76,7 +72,6 @@
             ></textarea>
           </div>
 
-          <!-- 🔹 로딩 중에는 Needs/Recommend 대신 로딩 애니메이션 표시 -->
           <div class="detail-section">
             <template v-if="loading">
               <div class="loader-wrap">
@@ -131,7 +126,7 @@
       @open-register="openRegisterFromLogin"
     />
 
-    <!-- 🔹 회원가입 모달 (로그인 모달에서 넘어올 수 있게) -->
+    <!-- 🔹 회원가입 모달 -->
     <RegisterModal
       v-if="showRegisterModal"
       @close="closeRegisterModal"
@@ -160,9 +155,20 @@ export default {
   setup() {
     const route = useRoute()
 
-    // 처음에는 SearchBar 에서 넘어온 q 값
+    // 🔹 목업 이미지 3개
+    const mockImages = [
+      'https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg',
+      'https://www.nvidia.com/content/nvidiaGDC/gb/en_GB/geforce/laptops/_jcr_content/root/responsivegrid/nv_container/nv_container_454467679/nv_teaser_copy.coreimg.100.1070.jpeg/1737972531775/geforce-rtx-30-series-laptops-ari.jpeg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4kjRPi9UekiErQNI9YLi_R21z5-iFYaey4w&s',
+    ]
+
+    const getThumbSrc = (item, index) => {
+      if (item && item.imageUrl) return item.imageUrl
+      // index 0,1,2 → 위 3개 순환 사용
+      return mockImages[index % mockImages.length]
+    }
+
     const query = ref(route.query.q || '')
-    // 오른쪽 상단 textarea 에서 수정 가능한 값
     const editableQuery = ref(query.value)
 
     const loading = ref(false)
@@ -173,15 +179,11 @@ export default {
     const summary = ref('')
     const recommends = ref([])
 
-    // 로그인 여부
     const isAuthenticated = ref(!!AuthService.getCurrentUser())
 
-    // 장바구니 (프로필에서 사용할 데이터)
-    const cart = ref([]) // [{id, title, price, imageUrl, specs}, ...]
-    // 이 Recommend 화면에서 선택된 카드 id (버튼 상태 용)
+    const cart = ref([])
     const selectedIds = ref([])
 
-    // 모달 상태
     const showLoginModal = ref(false)
     const showRegisterModal = ref(false)
 
@@ -189,15 +191,12 @@ export default {
       isAuthenticated.value = !!AuthService.getCurrentUser()
     }
 
-    // localStorage에서 cart 불러오기
     const loadCartFromStorage = () => {
       try {
         const raw = localStorage.getItem(CART_STORAGE_KEY)
         if (!raw) return
         const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) {
-          cart.value = parsed
-        }
+        if (Array.isArray(parsed)) cart.value = parsed
       } catch (e) {
         console.warn('[CART] Failed to parse cart from storage:', e)
       }
@@ -211,13 +210,11 @@ export default {
       }
     }
 
-    // 버튼 상태: 이번 추천 화면에서 선택된 것 기준
     const isSelected = (id) => {
       if (!id) return false
       return selectedIds.value.includes(id)
     }
 
-    // 실제 장바구니 안에 있는지
     const isInCart = (id) => {
       if (!id) return false
       return cart.value.some((item) => item.id === id)
@@ -228,11 +225,9 @@ export default {
       const id = item.id
 
       if (isSelected(id)) {
-        // 선택 해제: 버튼 - → +, cart에서도 제거
         selectedIds.value = selectedIds.value.filter((x) => x !== id)
         cart.value = cart.value.filter((c) => c.id !== id)
       } else {
-        // 선택: 버튼 + → -, cart에 추가 (중복 방지)
         selectedIds.value.push(id)
         if (!isInCart(id)) {
           cart.value.push({
@@ -246,18 +241,14 @@ export default {
       }
 
       saveCartToStorage()
-      console.log('[CART] current cart:', cart.value)
     }
 
-    // + 버튼 클릭 시 동작
     const handlePlusClick = (item) => {
       if (!isAuthenticated.value) {
-        // 로그인 안 되어 있으면 로그인 모달 오픈
         showRegisterModal.value = false
         showLoginModal.value = true
         return
       }
-      // 로그인 되어 있으면 선택 + 장바구니 토글
       toggleSelectionAndCart(item)
     }
 
@@ -269,26 +260,22 @@ export default {
       showRegisterModal.value = false
     }
 
-    // 로그인 모달 → 회원가입 모달
     const openRegisterFromLogin = () => {
       showLoginModal.value = false
       showRegisterModal.value = true
     }
 
-    // 회원가입 모달 → 로그인 모달
     const openLoginFromRegister = () => {
       showRegisterModal.value = false
       showLoginModal.value = true
     }
 
     const handleLoggedIn = () => {
-      // 모달에서 로그인 성공 시 호출
       updateAuthState()
       showLoginModal.value = false
     }
 
     const handleRegistered = () => {
-      // 회원가입 성공 시 로그인된 상태로 간주
       updateAuthState()
       showRegisterModal.value = false
     }
@@ -305,14 +292,12 @@ export default {
 
       try {
         const data = await fetchLaptopRecommendations(query.value)
-        if (!data) {
-          return
-        }
+        if (!data) return
+
         results.value = data.results || []
         needs.value = data.needs || []
         summary.value = data.summary || ''
         recommends.value = data.recommends || []
-        // 새 추천이 들어오면 선택 상태 초기화 → 항상 + 로 시작
         selectedIds.value = []
       } catch (err) {
         console.error('추천 호출 실패:', err)
@@ -322,7 +307,6 @@ export default {
       }
     }
 
-    // Rewrite: 현재 textarea(editableQuery)의 내용으로 다시 GMS 호출
     const rewriteSearch = async () => {
       const nextQuery = (editableQuery.value || '').trim()
       if (!nextQuery || loading.value) return
@@ -365,7 +349,6 @@ export default {
       recommendList,
       rewriteSearch,
       formatPrice,
-      // auth & cart & modal & selection
       isAuthenticated,
       cart,
       isSelected,
@@ -378,6 +361,7 @@ export default {
       openLoginFromRegister,
       handleLoggedIn,
       handleRegistered,
+      getThumbSrc,
     }
   },
 }
@@ -402,7 +386,6 @@ export default {
   gap: 40px;
 }
 
-/* 왼쪽 카드 컬럼 */
 .left-column {
   display: flex;
   flex-direction: column;
@@ -439,24 +422,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* 🔹 넘치는 부분 잘라내기 */
 }
 
+/* 🔹 이미지가 컨테이너를 여백 없이 가득 채우도록 */
 .product-thumb img {
-  max-width: 80%;
-  max-height: 80%;
-  object-fit: contain;
-}
-
-.thumb-placeholder {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thumb-icon {
-  font-size: 32px;
+  object-fit: cover;   /* 비율 유지하며 꽉 채우고, 남는 부분 crop */
 }
 
 .price-tag {
@@ -468,7 +441,6 @@ export default {
   color: #4b4b63;
 }
 
-/* 카드 본문 */
 .product-body {
   padding: 20px 28px;
   display: flex;
@@ -490,7 +462,6 @@ export default {
   color: #cfd5ff;
 }
 
-/* 왼쪽 + / - 버튼 */
 .plus-badge {
   position: absolute;
   left: 18px;
@@ -519,7 +490,6 @@ export default {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* 선택(장바구니 추가)된 상태 */
 .plus-badge.in-cart {
   background: #10b981;
 }
@@ -534,7 +504,6 @@ export default {
   padding: 32px 32px 24px;
 }
 
-/* 상단 textarea 버블 */
 .summary-bubble {
   background: #f3f0ff;
   border-radius: 28px;
@@ -558,7 +527,6 @@ export default {
   overflow-y: auto;
 }
 
-/* Needs / Recommend 섹션 */
 .detail-section {
   font-size: 14px;
   color: #e5e7f4;
@@ -576,7 +544,6 @@ export default {
   padding-left: 18px;
 }
 
-/* 로딩 애니메이션 */
 .loader-wrap {
   display: flex;
   align-items: center;
