@@ -1,5 +1,6 @@
 <template>
   <div class="profile-container">
+    <form>
     <h2 class="title">프로필 정보</h2>
 
     <div v-if="user" class="profile-card">
@@ -63,12 +64,12 @@
           <router-link to="/login" class="auth-link">로그인하기</router-link>
         </div>
       </form>
-    </div>
   </div>
 </template>
 
 <script>
 import AuthService from '@/services/AuthService';
+import { formToJSON } from 'axios';
 
 export default {
   name: 'RegisterView',

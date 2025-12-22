@@ -1,15 +1,49 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
-# Create your models here.
+User = get_user_model()
+
 class Article(models.Model):
-    title = models.CharField(max_length=10)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    CATEGORY_CHOICES = [
+        ('notice', '공지'),
+        ('tip', '개발팁'),
+        ('qna', 'Q&A'),
+        ('free', '자유게시판'),
+    ]
+    
+    title = models.CharField('제목', max_length=100)
+    content = models.TextField('내용')
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='articles'
+    )
+    category = models.CharField('카테고리', max_length=10, choices=CATEGORY_CHOICES, default='free')
+    views = models.PositiveIntegerField('조회수', default=0)
+    likes = models.ManyToManyField(User, related_name='liked_articles', blank=True)
+    created_at = models.DateTimeField('작성일', auto_now_add=True)
+    updated_at = models.DateTimeField('수정일', auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    def increase_views(self):
+        self.views += 1
+        self.save(update_fields=['views'])
 
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
-    content = models.CharField(max_length=200)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField('내용')
+    created_at = models.DateTimeField('작성일', auto_now_add=True)
+    updated_at = models.DateTimeField('수정일', auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.author.username} - {self.content[:30]}"
