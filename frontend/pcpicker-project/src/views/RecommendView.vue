@@ -45,8 +45,15 @@
                 </ul>
               </div>
 
-              <!-- 왼쪽 동그라미 + 버튼 -->
-              <button class="plus-badge">+</button>
+              <!-- 기본은 +, 클릭하면 이 화면 기준으로만 - 토글 -->
+              <button
+                class="plus-badge"
+                :class="{ 'in-cart': isSelected(item.id) }"
+                @click="handlePlusClick(item)"
+                :aria-pressed="isSelected(item.id)"
+              >
+                {{ isSelected(item.id) ? '-' : '+' }}
+              </button>
             </article>
 
             <p
@@ -74,7 +81,9 @@
             <template v-if="loading">
               <div class="loader-wrap">
                 <div class="spinner"></div>
-                <p class="loading-text">요구사항을 분석하고 맞는 노트북을 찾는 중입니다...</p>
+                <p class="loading-text">
+                  요구사항을 분석하고 맞는 노트북을 찾는 중입니다...
+                </p>
               </div>
             </template>
 
@@ -113,16 +122,41 @@
         </div>
       </div>
     </section>
+
+    <!-- 🔹 로그인 모달 -->
+    <LoginModal
+      v-if="showLoginModal"
+      @close="closeLoginModal"
+      @logged-in="handleLoggedIn"
+      @open-register="openRegisterFromLogin"
+    />
+
+    <!-- 🔹 회원가입 모달 (로그인 모달에서 넘어올 수 있게) -->
+    <RegisterModal
+      v-if="showRegisterModal"
+      @close="closeRegisterModal"
+      @registered="handleRegistered"
+      @open-login="openLoginFromRegister"
+    />
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchLaptopRecommendations } from '@/services/gmsService'
+import AuthService from '@/services/AuthService'
+import LoginModal from '@/components/LoginModal.vue'
+import RegisterModal from '@/components/RegisterModal.vue'
+
+const CART_STORAGE_KEY = 'mrpcpicker_cart'
 
 export default {
   name: 'RecommendView',
+  components: {
+    LoginModal,
+    RegisterModal,
+  },
   setup() {
     const route = useRoute()
 
@@ -139,6 +173,126 @@ export default {
     const summary = ref('')
     const recommends = ref([])
 
+    // 로그인 여부
+    const isAuthenticated = ref(!!AuthService.getCurrentUser())
+
+    // 장바구니 (프로필에서 사용할 데이터)
+    const cart = ref([]) // [{id, title, price, imageUrl, specs}, ...]
+    // 이 Recommend 화면에서 선택된 카드 id (버튼 상태 용)
+    const selectedIds = ref([])
+
+    // 모달 상태
+    const showLoginModal = ref(false)
+    const showRegisterModal = ref(false)
+
+    const updateAuthState = () => {
+      isAuthenticated.value = !!AuthService.getCurrentUser()
+    }
+
+    // localStorage에서 cart 불러오기
+    const loadCartFromStorage = () => {
+      try {
+        const raw = localStorage.getItem(CART_STORAGE_KEY)
+        if (!raw) return
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          cart.value = parsed
+        }
+      } catch (e) {
+        console.warn('[CART] Failed to parse cart from storage:', e)
+      }
+    }
+
+    const saveCartToStorage = () => {
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.value))
+      } catch (e) {
+        console.warn('[CART] Failed to save cart to storage:', e)
+      }
+    }
+
+    // 버튼 상태: 이번 추천 화면에서 선택된 것 기준
+    const isSelected = (id) => {
+      if (!id) return false
+      return selectedIds.value.includes(id)
+    }
+
+    // 실제 장바구니 안에 있는지
+    const isInCart = (id) => {
+      if (!id) return false
+      return cart.value.some((item) => item.id === id)
+    }
+
+    const toggleSelectionAndCart = (item) => {
+      if (!item || !item.id) return
+      const id = item.id
+
+      if (isSelected(id)) {
+        // 선택 해제: 버튼 - → +, cart에서도 제거
+        selectedIds.value = selectedIds.value.filter((x) => x !== id)
+        cart.value = cart.value.filter((c) => c.id !== id)
+      } else {
+        // 선택: 버튼 + → -, cart에 추가 (중복 방지)
+        selectedIds.value.push(id)
+        if (!isInCart(id)) {
+          cart.value.push({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            imageUrl: item.imageUrl,
+            specs: item.specs || [],
+          })
+        }
+      }
+
+      saveCartToStorage()
+      console.log('[CART] current cart:', cart.value)
+    }
+
+    // + 버튼 클릭 시 동작
+    const handlePlusClick = (item) => {
+      if (!isAuthenticated.value) {
+        // 로그인 안 되어 있으면 로그인 모달 오픈
+        showRegisterModal.value = false
+        showLoginModal.value = true
+        return
+      }
+      // 로그인 되어 있으면 선택 + 장바구니 토글
+      toggleSelectionAndCart(item)
+    }
+
+    const closeLoginModal = () => {
+      showLoginModal.value = false
+    }
+
+    const closeRegisterModal = () => {
+      showRegisterModal.value = false
+    }
+
+    // 로그인 모달 → 회원가입 모달
+    const openRegisterFromLogin = () => {
+      showLoginModal.value = false
+      showRegisterModal.value = true
+    }
+
+    // 회원가입 모달 → 로그인 모달
+    const openLoginFromRegister = () => {
+      showRegisterModal.value = false
+      showLoginModal.value = true
+    }
+
+    const handleLoggedIn = () => {
+      // 모달에서 로그인 성공 시 호출
+      updateAuthState()
+      showLoginModal.value = false
+    }
+
+    const handleRegistered = () => {
+      // 회원가입 성공 시 로그인된 상태로 간주
+      updateAuthState()
+      showRegisterModal.value = false
+    }
+
     const topThree = computed(() => results.value.slice(0, 3))
     const needsList = computed(() => needs.value || [])
     const recommendList = computed(() => recommends.value || [])
@@ -152,13 +306,14 @@ export default {
       try {
         const data = await fetchLaptopRecommendations(query.value)
         if (!data) {
-          // 중복 호출 차단 등으로 null 반환 시
           return
         }
         results.value = data.results || []
         needs.value = data.needs || []
         summary.value = data.summary || ''
         recommends.value = data.recommends || []
+        // 새 추천이 들어오면 선택 상태 초기화 → 항상 + 로 시작
+        selectedIds.value = []
       } catch (err) {
         console.error('추천 호출 실패:', err)
         error.value = err
@@ -173,7 +328,7 @@ export default {
       if (!nextQuery || loading.value) return
 
       query.value = nextQuery
-      await loadRecommendations()  // 같은 화면에서 재검색
+      await loadRecommendations()
     }
 
     const formatPrice = (price) => {
@@ -185,12 +340,18 @@ export default {
       return new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
-        maximumFractionDigits: 0
+        maximumFractionDigits: 0,
       }).format(num)
     }
 
     onMounted(() => {
+      window.addEventListener('auth-changed', updateAuthState)
+      loadCartFromStorage()
       loadRecommendations()
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('auth-changed', updateAuthState)
     })
 
     return {
@@ -203,9 +364,22 @@ export default {
       needsList,
       recommendList,
       rewriteSearch,
-      formatPrice
+      formatPrice,
+      // auth & cart & modal & selection
+      isAuthenticated,
+      cart,
+      isSelected,
+      handlePlusClick,
+      showLoginModal,
+      showRegisterModal,
+      closeLoginModal,
+      closeRegisterModal,
+      openRegisterFromLogin,
+      openLoginFromRegister,
+      handleLoggedIn,
+      handleRegistered,
     }
-  }
+  },
 }
 </script>
 
@@ -316,7 +490,7 @@ export default {
   color: #cfd5ff;
 }
 
-/* 왼쪽 + 버튼 */
+/* 왼쪽 + / - 버튼 */
 .plus-badge {
   position: absolute;
   left: 18px;
@@ -330,6 +504,24 @@ export default {
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.plus-badge:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* 선택(장바구니 추가)된 상태 */
+.plus-badge.in-cart {
+  background: #10b981;
 }
 
 /* 오른쪽 요약 컬럼 */
@@ -436,24 +628,5 @@ export default {
 
 .rewrite-btn:hover:enabled {
   opacity: 0.9;
-}
-
-/* 반응형 */
-@media (max-width: 960px) {
-  .recommend-hero {
-    padding: 72px 16px 40px;
-  }
-
-  .recommend-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .right-column {
-    order: -1;
-  }
-
-  .product-card {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

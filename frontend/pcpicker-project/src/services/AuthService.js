@@ -17,23 +17,23 @@ class AuthService {
     console.log('Login attempt with:', { username, password }); // Debug log
     return axios
       .post(API_URL + 'token/', { username, password })
-      .then(response => {
+      .then((response) => {
         if (response.data.access) {
+          // 토큰 + 유저 정보 저장
           localStorage.setItem('user', JSON.stringify(response.data));
-          // 🔹 로그인 성공 시 전역 auth 변경 이벤트
+          // 전역 auth 변경 이벤트
           window.dispatchEvent(new Event('auth-changed'));
         }
         return response.data;
       })
-      .catch(error => {
-        console.error('Login error:', error.response?.data); // Log detailed error
+      .catch((error) => {
+        console.error('Login error:', error.response?.data);
         throw error;
       });
   }
-  
+
   // Logout user
   logout() {
-    // 1. 먼저 클라이언트 상태를 정리
     const user = this.getCurrentUser();
     const headers =
       user && user.access
@@ -42,13 +42,15 @@ class AuthService {
 
     localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
-    window.dispatchEvent(new Event('auth-changed'));   // 🔴 NavBar 깨우기
+    window.dispatchEvent(new Event('auth-changed'));
 
-    // 2. 백엔드에 알려주는 요청은 "옵션"으로, 실패해도 무시
     return axios
       .post(API_URL + 'logout/', null, { headers })
       .catch((error) => {
-        console.warn('Logout API error (무시해도 됨):', error.response?.data || error.message);
+        console.warn(
+          'Logout API error (무시해도 됨):',
+          error.response?.data || error.message,
+        );
       });
   }
 
@@ -60,6 +62,59 @@ class AuthService {
       password: password1,
       password2,
       email
+  /**
+   * Register new user
+   *
+   * - 모달에서: AuthService.register(formData)
+   *   -> { name, username, email, password, password2 }
+   * - 예전 방식: AuthService.register(name, username, password)
+   */
+  register(nameOrData, username, password) {
+    let payload = {};
+
+    if (typeof nameOrData === 'object' && nameOrData !== null) {
+      // ✅ formData 객체 버전
+      const data = nameOrData;
+      payload = {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        password2: data.password2 ?? data.password,
+      };
+    } else {
+      // ✅ 옛 방식(파라미터 3개)도 호환
+      payload = {
+        name: nameOrData,
+        username,
+        password,
+        password2: password,
+      };
+    }
+
+    return axios.post(API_URL + 'register/', payload).then((response) => {
+      const data = response.data;
+
+      // 🔹 백엔드에서 내려주는 형태:
+      // { message, user: {...}, tokens: { access, refresh } }
+      if (data.tokens && data.tokens.access) {
+        const storedUser = {
+          access: data.tokens.access,
+          refresh: data.tokens.refresh,
+          user: data.user,
+        };
+        // 로그인과 동일한 형태로 저장
+        localStorage.setItem('user', JSON.stringify(storedUser));
+
+        // Axios 디폴트 헤더에도 토큰 세팅 (선택이지만 편함)
+        axios.defaults.headers.common['Authorization'] =
+          'Bearer ' + data.tokens.access;
+
+        // NavBar 등 업데이트
+        window.dispatchEvent(new Event('auth-changed'));
+      }
+
+      return data;
     });
   }
 
@@ -69,7 +124,6 @@ class AuthService {
       const raw = localStorage.getItem('user');
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
-      // 파싱 에러 나면 그냥 로그인 안 된 걸로 취급
       return null;
     }
   }
@@ -77,7 +131,7 @@ class AuthService {
   // Update user profile
   updateProfile(userData) {
     return axios.put(API_URL + 'user/', userData, {
-      headers: this.getAuthHeader()
+      headers: this.getAuthHeader(),
     });
   }
 
@@ -85,64 +139,54 @@ class AuthService {
   changePassword(oldPassword, newPassword, newPassword2) {
     return axios.post(
       API_URL + 'change-password/',
-      { 
-        old_password: oldPassword, 
+      {
+        old_password: oldPassword,
         new_password: newPassword,
-        new_password2: newPassword2
+        new_password2: newPassword2,
       },
-      { 
-        headers: this.getAuthHeader() 
-      }
+      {
+        headers: this.getAuthHeader(),
+      },
     );
   }
 
   // Delete account and logout
   async deleteAccount() {
     try {
-      // First, make the delete request
       const response = await axios.delete(API_URL + 'user/delete/', {
-        headers: this.getAuthHeader()
+        headers: this.getAuthHeader(),
       });
-      
-      // Clear user data from local storage to log out
-      localStorage.removeItem('user');
-      
-      // Clear any axios default headers
-      delete axios.defaults.headers.common['Authorization'];
 
-      // 🔹 회원 탈퇴 후 전역 auth 변경 이벤트
+      localStorage.removeItem('user');
+      delete axios.defaults.headers.common['Authorization'];
       window.dispatchEvent(new Event('auth-changed'));
-      
+
       return response.data;
     } catch (error) {
-      // If there's an error, still try to clear the local storage
       localStorage.removeItem('user');
       delete axios.defaults.headers.common['Authorization'];
-
-      // 🔹 에러가 나도 클라이언트 상태는 로그아웃된 것으로 동기화
       window.dispatchEvent(new Event('auth-changed'));
-      
-      // Re-throw the error so the calling component can handle it
       throw error;
     }
   }
 
   // Helper method to get auth header
   getAuthHeader() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const raw = localStorage.getItem('user');
+    const user = raw ? JSON.parse(raw) : null;
     if (user && user.access) {
-      return { 'Authorization': 'Bearer ' + user.access };
+      return { Authorization: 'Bearer ' + user.access };
     } else {
       return {};
     }
   }
+
   // Get user profile (프로필 조회)
   getProfile() {
     return api.get('user/', {
       headers: this.getAuthHeader(),
-    })
+    });
   }
-
 }
 
 export default new AuthService();

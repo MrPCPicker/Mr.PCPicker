@@ -1,12 +1,29 @@
+<!-- src/components/RegisterModal.vue -->
 <template>
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal">
-      <h2 class="modal-title">로그인</h2>
-      <form @submit.prevent="handleLogin">
+      <h2 class="modal-title">회원가입</h2>
+
+      <form @submit.prevent="handleRegister">
+        <!-- 이름 -->
+        <div class="form-group">
+          <label>이름</label>
+          <input
+            v-model="formData.name"
+            type="text"
+            :class="{ 'error-input': errors.name }"
+            required
+          />
+          <p v-if="errors.name" class="error-message">
+            {{ errors.name }}
+          </p>
+        </div>
+
+        <!-- 아이디 -->
         <div class="form-group">
           <label>아이디</label>
           <input
-            v-model="username"
+            v-model="formData.username"
             type="text"
             :class="{ 'error-input': errors.username }"
             required
@@ -16,11 +33,26 @@
           </p>
         </div>
 
+        <!-- 이메일 -->
+        <div class="form-group">
+          <label>이메일</label>
+          <input
+            v-model="formData.email"
+            type="email"
+            :class="{ 'error-input': errors.email }"
+            required
+          />
+          <p v-if="errors.email" class="error-message">
+            {{ errors.email }}
+          </p>
+        </div>
+
+        <!-- 비밀번호 -->
         <div class="form-group">
           <label>비밀번호</label>
           <div class="password-input-container">
             <input
-              v-model="password"
+              v-model="formData.password"
               :type="showPassword ? 'text' : 'password'"
               :class="{ 'error-input': errors.password }"
               required
@@ -40,18 +72,43 @@
           </p>
         </div>
 
-        <button type="submit" :disabled="loading">
-          {{ loading ? '로그인 중...' : '로그인' }}
-        </button>
+        <!-- 비밀번호 확인 -->
+        <div class="form-group">
+          <label>비밀번호 확인</label>
+          <div class="password-input-container">
+            <input
+              v-model="formData.password2"
+              :type="showPassword2 ? 'text' : 'password'"
+              :class="{ 'error-input': errors.password2 }"
+              required
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              @click="togglePasswordVisibility2"
+              :title="showPassword2 ? '비밀번호 숨기기' : '비밀번호 보기'"
+            >
+              <span v-if="showPassword2">👁️</span>
+              <span v-else>👁️‍🗨️</span>
+            </button>
+          </div>
+          <p v-if="errors.password2" class="error-message">
+            {{ errors.password2 }}
+          </p>
+        </div>
 
         <p v-if="error" class="error">
           {{ error }}
         </p>
 
-        <p class="register-text">
-          계정이 없으신가요?
-          <button class="register-link" @click.prevent="goRegister">
-            회원가입하기
+        <button type="submit" :disabled="loading">
+          {{ loading ? '가입 중...' : '가입하기' }}
+        </button>
+
+        <p class="auth-footer">
+          이미 계정이 있으신가요?
+          <button class="auth-link-button" @click.prevent="goLogin">
+            로그인하기
           </button>
         </p>
       </form>
@@ -63,66 +120,109 @@
 import { ref } from 'vue'
 import AuthService from '@/services/AuthService'
 
-const emit = defineEmits(['close', 'logged-in', 'open-register'])
+const emit = defineEmits(['close', 'registered', 'open-login'])
 
-const username = ref('')
-const password = ref('')
-const showPassword = ref(false)
-const error = ref('')
-const loading = ref(false)
-const errors = ref({
+const formData = ref({
+  name: '',
   username: '',
+  email: '',
   password: '',
+  password2: '',
+})
+const showPassword = ref(false)
+const showPassword2 = ref(false)
+const loading = ref(false)
+const error = ref(null)
+const errors = ref({
+  name: '',
+  username: '',
+  email: '',
+  password: '',
+  password2: '',
 })
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
 
+const togglePasswordVisibility2 = () => {
+  showPassword2.value = !showPassword2.value
+}
+
 const clearErrors = () => {
-  error.value = ''
-  errors.value.username = ''
-  errors.value.password = ''
+  error.value = null
+  errors.value = {
+    name: '',
+    username: '',
+    email: '',
+    password: '',
+    password2: '',
+  }
 }
 
-const goRegister = () => {
+const goLogin = () => {
   emit('close')
-  emit('open-register')
+  emit('open-login')
 }
 
-const handleLogin = async () => {
+const handleRegister = async () => {
   clearErrors()
+
+  if (formData.value.password !== formData.value.password2) {
+    errors.value.password2 = '비밀번호가 일치하지 않습니다.'
+    return
+  }
+
   loading.value = true
 
   try {
-    // ✅ 로그인만 처리 (토큰/유저 저장)
-    await AuthService.login(username.value, password.value)
-
-    // ✅ 부모에게 "로그인 완료" 알림
-    emit('logged-in')
-
-    // ✅ 모달 닫기
+    await AuthService.register(formData.value)
+    window.dispatchEvent(new Event('auth-changed'))
+    emit('registered')
     emit('close')
   } catch (err) {
     if (err.response && err.response.data) {
-      const errorData = err.response.data
+      const data = err.response.data
 
-      if (errorData.username) {
-        errors.value.username = errorData.username[0]
+      if (data.name) {
+        errors.value.name = Array.isArray(data.name)
+          ? data.name[0]
+          : data.name
+      }
+      if (data.username) {
+        errors.value.username = Array.isArray(data.username)
+          ? data.username[0]
+          : data.username
+      }
+      if (data.email) {
+        errors.value.email = Array.isArray(data.email)
+          ? data.email[0]
+          : data.email
+      }
+      if (data.password) {
+        errors.value.password = Array.isArray(data.password)
+          ? data.password[0]
+          : data.password
+      }
+      if (data.password2) {
+        errors.value.password2 = Array.isArray(data.password2)
+          ? data.password2[0]
+          : data.password2
       }
 
-      if (errorData.password) {
-        errors.value.password = errorData.password[0]
-      }
-
-      if (!errorData.username && !errorData.password) {
+      if (
+        !data.name &&
+        !data.username &&
+        !data.email &&
+        !data.password &&
+        !data.password2
+      ) {
         error.value =
-          err.response.data.detail ||
-          '로그인에 실패했습니다. 다시 시도해주세요.'
+          data.detail || '회원가입에 실패했습니다. 다시 시도해주세요.'
       }
     } else {
-      error.value = '로그인에 실패했습니다. 다시 시도해주세요.'
-      console.error('Login error (modal):', err)
+      error.value = '회원가입에 실패했습니다. 다시 시도해주세요.'
+      console.error('Register error (modal):', err)
     }
   } finally {
     loading.value = false
@@ -141,8 +241,9 @@ const handleLogin = async () => {
   z-index: 100;
 }
 
+/* ⇩ 카드 배경 흰색 */
 .modal {
-  max-width: 400px;
+  max-width: 420px;
   width: 90%;
   background: #ffffff;
   border-radius: 20px;
@@ -161,16 +262,17 @@ const handleLogin = async () => {
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.88rem;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
   color: #374151;
 }
 
+/* ⇩ 입력란 흰색 */
 .form-group input {
   width: 100%;
   padding: 9px 10px;
@@ -227,14 +329,14 @@ const handleLogin = async () => {
 button[type='submit'] {
   width: 100%;
   padding: 10px 0;
-  background: #6b5fcf;
+  background-color: #6b5fcf;
   color: #f9fafb;
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  margin-top: 6px;
   font-size: 0.95rem;
   font-weight: 600;
-  margin-top: 4px;
   transition:
     background-color 0.15s ease,
     transform 0.08s ease,
@@ -255,7 +357,7 @@ button[type='submit']:disabled {
 
 .error {
   color: #b91c1c;
-  margin: 10px 0 4px;
+  margin: 8px 0 4px;
   text-align: center;
   font-size: 0.9rem;
 }
@@ -271,24 +373,24 @@ button[type='submit']:disabled {
   border-color: #f97373 !important;
 }
 
-.register-text {
+.auth-footer {
   margin-top: 12px;
   text-align: center;
   font-size: 0.88rem;
   color: #6b7280;
 }
 
-.register-link {
+.auth-link-button {
   background: none;
   border: none;
   color: #4f46e5;
   cursor: pointer;
-  padding: 0;
   margin-left: 4px;
+  padding: 0;
   font-size: 0.88rem;
 }
 
-.register-link:hover {
+.auth-link-button:hover {
   text-decoration: underline;
 }
 
