@@ -1,118 +1,146 @@
-# from django.shortcuts import render
-from .models import Article, Comment
-from .serializers import ArticleListSerializer, ArticleSerializer, CommentListSerializer, CommentSerializer
-
-from rest_framework import status
+from rest_framework import status, permissions, pagination
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView
+)
 
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.db.models import Count, Q
 
+from .models import Article, Comment
+from .serializers import (
+    ArticleListSerializer,
+    ArticleDetailSerializer,
+    CommentSerializer
+)
 
-# Create your views here.
-@api_view(['GET', 'POST'])
-def article_list(request):
-    if request.method == 'GET': # READ(index)
-        articles = Article.objects.all()
-        serializer = ArticleListSerializer(articles, many=True) # ArticleListSerializer
+#페이지네이션
+class ArticlePagination(pagination.PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+#게시글 목록 + 생성
+class ArticleListCreateView(ListCreateAPIView):
+    serializer_class = ArticleListSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = ArticlePagination
+
+    #queryset 로직
+    def get_queryset(self):
+        queryset = Article.objects.annotate(
+            comment_count=Count('comments', distinct=True),
+            likes_count=Count('likes', distinct=True)
+        ).select_related('author').prefetch_related('likes')
+
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(content__icontains=search) |
+                Q(author__username__icontains=search)
+            )
+
+        sort = self.request.query_params.get('sort', 'created_at')
+        if sort in ['views', 'created_at', 'like_count', 'comment_count']:
+            queryset = queryset.order_by('-' + sort)
+
+        return queryset
+
+    #생성 시 작성자 자동 지정
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+#게시글 상세/ 수정/ 삭제
+class ArticleDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ArticleDetailSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Article.objects.all()
+
+    #조회수 증가
+    def retrieve(self, request, *args, **kwargs):
+        article = self.get_object()
+        article.increase_views()
+        serializer = self.get_serializer(article)
         return Response(serializer.data)
 
-    elif request.method == 'POST': # CREATE
-        serializer = ArticleSerializer(data=request.data) # ArticleSerializer
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # serializer.errors
-        
-    elif request.method == 'POST': # CREATE
-        serializer = ArticleSerializer(data=request.data) # ArticleSerializer
-        if serializer.is_valid(raise_exception=True): # raise_exception=True
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # 생략가능
+    #작성자만 수정/삭제
+    def perform_update(self, serializer):
+        if self.request.user != serializer.instance.author:
+            raise permissions.PermissionDenied("권한이 없습니다.")
+        serializer.save()
 
-@api_view(['GET', 'DELETE', 'PUT', 'PATCH']) # PUT/PATCH 중 하나 선택
-def article_detail(request, article_pk): # article_pk
-    article = Article.objects.get(pk=article_pk)
-    
-    if request.method == 'GET': # READ(detail)
-        serializer = ArticleSerializer(article) # ArticleSerializer
-        return Response(serializer.data) 
+    def perform_destroy(self, instance):
+        if self.request.user != instance.author:
+            raise permissions.PermissionDenied("권한이 없습니다.")
+        instance.delete()
 
-    elif request.method == 'DELETE': # DELETE
-        article.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+#게시글 좋아요
+class ArticleLikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-    elif request.method == 'DELETE': # DELETE
-        pk = article.pk
-        title = article.title
-        article.delete()
-        data = {
-            'message': f'{pk}번 게시글 "{title}"이 삭제되었습니다.'
-        }
-        return Response(data, status=status.HTTP_200_OK)
+    def post(self, request, pk):
+        article = get_object_or_404(Article, pk=pk)
 
-    elif request.method == 'PUT': # UPDATE
-        serializer = ArticleSerializer(article, data=request.data) # ArticleSerializer
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # serializer.errors
+        if article.likes.filter(id=request.user.id).exists():
+            article.likes.remove(request.user)
+            liked = False
+        else:
+            article.likes.add(request.user)
+            liked = True
 
-    elif request.method == 'PATCH': # UPDATE
-        serializer = ArticleSerializer(article, data=request.data, partial=True) # ArticleSerializer
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # serializer.errors
+        return Response({
+            'liked': liked,
+            'count': article.likes.count()
+        })
 
-@api_view(['GET'])
-def comment_list(request):
-    if request.method == 'GET': # READ(index)
-        comments = Comment.objects.all()
-        serializer = CommentListSerializer(comments, many=True) # CommentListSerializer
-        return Response(serializer.data)
+#댓글 목록 + 생성
+class CommentListCreateView(ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = ArticlePagination
 
-@api_view(['POST'])
-def comment_create(request, article_pk): # article_pk
-    article = Article.objects.get(pk=article_pk)
-    if request.method == 'POST':
-        serializer = CommentSerializer(datat=request.data)
-        if serializer.is_valid(raise_exception=True): # 404 Error -> read_only_field
-            serializer.save(article=article) # form 일때는 commit=False        
-            return Response(serializer.errors, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # 생략가능
+    def get_queryset(self):
+        article_pk = self.kwargs['article_pk']
+        return Comment.objects.filter(
+            article_id=article_pk
+        ).select_related('author')
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def comment_detail(request, comment_pk): # comment_pk
-    comment = Comment.objects.get(pk=comment_pk)
+    def perform_create(self, serializer):
+        article_pk = self.kwargs['article_pk']
+        article = get_object_or_404(Article, pk=article_pk)
+        serializer.save(
+            article=article,
+            author=self.request.user
+        )
 
-    if request.method == 'GET': # READ(detail)
-        serializer = CommentSerializer(comment)
-        return Response(serializer.data)
+#댓글 상세/ 수정/ 삭제
+class CommentDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    elif request.method == 'DELETE': # DELETE
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
-    elif request.method == 'DELETE': # DELETE
-        pk = comment.pk
-        comment.delete()
-        data = {
-            'message': f'{pk}번째 댓글'
-        }
-        return Response(data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return Comment.objects.all()
 
-    elif request.method == 'PUT': # UPDATE
-        serializer = CommentSerializer(comment, data=request.data)
-        if serializer.is_valid(raise_exception=True): # 404 Error -> read_only_field
-            serializer.save()
-            return Response(serializer.data)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # 생략가능
-        
-    elif request.method == 'PATCH': # UPDATE
-        serializer = CommentSerializer(comment, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True): # 404 Error -> read_only_field
-            serializer.save()
-            return Response(serializer.data)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # 생략가능
+    def perform_update(self, serializer):
+        if self.request.user != serializer.instance.author:
+            raise permissions.PermissionDenied("권한이 없습니다.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if self.request.user != instance.author:
+            raise permissions.PermissionDenied("권한이 없습니다.")
+        instance.delete()
+
+
+
+
+

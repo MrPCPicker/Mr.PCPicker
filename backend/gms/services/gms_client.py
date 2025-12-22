@@ -22,7 +22,7 @@ def call_gms_openai(prompt: str) -> str:
     }
 
     data = {
-        "model": "gpt-4.1",
+        "model": "gpt-4.1-nano",
         "input": prompt,
         "max_output_tokens": 250,  # 🔻 400 → 250으로 줄여서 출력 토큰 다이어트
     }

@@ -148,6 +148,10 @@ AUTH_USER_MODEL = 'accounts.User'
 CORS_ALLOW_ALL_ORIGINS = True  # 개발 환경에서만 사용하세요. 프로덕션에서는 특정 도메인만 허용하세요.
 CORS_ALLOW_CREDENTIALS = True
 
+# CORS 설정
+CORS_ALLOW_ALL_ORIGINS = True  # 개발 환경에서만 사용하세요. 프로덕션에서는 구체적인 도메인을 지정하세요.
+CORS_ALLOW_CREDENTIALS = True
+
 # CSRF 설정
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']  # Vue 개발 서버 주소
 
