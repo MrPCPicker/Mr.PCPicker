@@ -3,9 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthService from '@/services/AuthService'
 import HomeView from '@/views/HomeView.vue'
 import CommunityView from '@/views/CommunityView.vue'
+import PostDetailView from '@/views/PostDetailView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import LoginView from '@/views/LoginView.vue'
-import RecommendView from '@/views/RecommendView.vue'   // 🔹 새로 추가
+import RecommendView from '@/views/RecommendView.vue'
+import PostEditView from '@/views/PostEditView.vue'   // 🔹 새로 추가
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +21,12 @@ const router = createRouter({
       path: '/community', 
       name: 'community',
       component: CommunityView 
+    },
+    {
+      path: '/community/:id',
+      name: 'post-detail',
+      component: PostDetailView,
+      props: true
     },
     { 
       path: '/profile', 
@@ -48,6 +56,13 @@ const router = createRouter({
       path: '/community/write',
       name: 'write-post',
       component: () => import('@/views/WritePostView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/community/edit/:id',
+      name: 'PostEdit',
+      component: PostEditView,
+      props: true, // 파라미터를 props로 전달
       meta: { requiresAuth: true }
     },
   ],
