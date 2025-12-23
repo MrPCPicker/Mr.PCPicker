@@ -1,0 +1,609 @@
+{
+  "status": "success",
+  "total_results": 1000,
+  "total_results_per_page": 50,
+  "total_pages": 20,
+  "page": 0,
+  "data": [
+    {
+      "Product": {
+        "id": "68b2cf8f4ff51e98dbc46135",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "68b9675898b7dd7e5e6c467e",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "68bc0a23c8a318dc6275ed07",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-07",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "68bc0a23c8a318dc6275ed06",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895744a",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-15",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895744b",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-15",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89574a5",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89574a6",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8957585",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-19",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895765c",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895765d",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895765e",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895765f",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-19",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da895766d",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-19",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8957771",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89577ee",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-06-20",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89577ef",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-05-19",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89577f0",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-10-10",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587dd",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587de",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587df",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587e2",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587e3",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587e4",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587e5",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587e6",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587ee",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-02",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587ef",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-05-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f0",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-19",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f1",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f2",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f3",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f4",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f6",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-31",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f7",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-31",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f8",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-05-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587f9",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-31",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587fa",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-28",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587fb",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-01",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587fc",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-02",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587fd",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-02",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587fe",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-07-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da89587ff",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-05-13",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958800",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "1899-12-30",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958802",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-10",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958803",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-03-21",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958804",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2022-04-10",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958805",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-05-01",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958807",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-07-31",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "69311b3687d7ba1da8958808",
+        "Brand": "Samsung",
+        "Category": "Laptops",
+        "Model": "",
+        "Version": "",
+        "Thumbnail": ""
+      },
+      "Release Date": "2021-07-31",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    }
+  ]
+}

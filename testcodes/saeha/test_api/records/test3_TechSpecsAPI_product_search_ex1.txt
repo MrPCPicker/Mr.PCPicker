@@ -1,0 +1,609 @@
+{
+  "status": "success",
+  "total_results": 1000,
+  "total_results_per_page": 50,
+  "total_pages": 20,
+  "page": 19,
+  "data": [
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687897",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0P3EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878a3",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P620",
+        "Version": "30E000TWUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868786a",
+        "Brand": "DELL",
+        "Category": "Desktops",
+        "Model": "DELL Precision 3660",
+        "Version": "J18TD",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868786b",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0M5EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868786c",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0S0EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687871",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0N7EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687898",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0R0EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868789d",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkCentre M70t",
+        "Version": "11D9S2LA00",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878a6",
+        "Brand": "ASUS",
+        "Category": "Desktops",
+        "Model": "ASUS E500 G6-W1250021W",
+        "Version": "90SF0181-M00AB0",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868785a",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo IdeaCentre 3",
+        "Version": "F0G0003HUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687867",
+        "Brand": "ASUS",
+        "Category": "Desktops",
+        "Model": "ASUS ExpertCenter PN52-S9032MD",
+        "Version": "90MS02F1-M00100",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687872",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0P8EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687877",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0N9EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687888",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0P1EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687891",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0Q1EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868789b",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0C2EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e868789c",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z2 G9",
+        "Version": "5F0N6EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878a5",
+        "Brand": "ASUS",
+        "Category": "Desktops",
+        "Model": "ASUS Chromebox 4",
+        "Version": "90MS0252-M001T0",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878a8",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P620",
+        "Version": "30E000GMIX",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878a9",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P520c",
+        "Version": "30BX00HSIX",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878b3",
+        "Brand": "MSI",
+        "Category": "Desktops",
+        "Model": "MSI Modern AM242TP",
+        "Version": "11M-1258AU",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878b6",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z1 G9",
+        "Version": "5F0B2EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c7",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkCentre M60e",
+        "Version": "11LV005JMX",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c8",
+        "Brand": "Acer",
+        "Category": "Desktops",
+        "Model": "Acer Aspire TC-1760",
+        "Version": "DG.E31ET.001",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d0",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009NUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d1",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3003PUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d2",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009PUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d7",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009YUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d8",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3007BUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878da",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3008VUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878dc",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009WUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878e1",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009UUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878e2",
+        "Brand": "DELL",
+        "Category": "Desktops",
+        "Model": "DELL Precision 3450",
+        "Version": "N001P3460SFFEMEA_VP",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878fc",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP 400 G9",
+        "Version": "6A7U7EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e8687907",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP 800 G9",
+        "Version": "5M947EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878bc",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP Z1 G9",
+        "Version": "5F0L0EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878bd",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkCentre M70t",
+        "Version": "11EV003KUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c3",
+        "Brand": "bluechip",
+        "Category": "Desktops",
+        "Model": "bluechip BUSINESSline L3379",
+        "Version": "551359",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c4",
+        "Brand": "ASUS",
+        "Category": "Desktops",
+        "Model": "ASUS PN PN41-BC303AV",
+        "Version": "90MS0271-M004W0",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878ca",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo IdeaCentre 5",
+        "Version": "90RX002AUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878cb",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3008NUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878d4",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3009SUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878df",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3003UUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878e6",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP 400 G9",
+        "Version": "6A722EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878ff",
+        "Brand": "HP",
+        "Category": "Desktops",
+        "Model": "HP 800 G9",
+        "Version": "5X7E9EA",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878be",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P520c",
+        "Version": "30BX00GWIX",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878bf",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkCentre M80q",
+        "Version": "11DN0003GE",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c2",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo IdeaCentre T540",
+        "Version": "90L5000EUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878c6",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo IdeaCentre T540",
+        "Version": "90L5000FUK",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    },
+    {
+      "Product": {
+        "id": "6429bf4cd23cbd21e86878cd",
+        "Brand": "Lenovo",
+        "Category": "Desktops",
+        "Model": "Lenovo ThinkStation P350",
+        "Version": "30E3007AUS",
+        "Thumbnail": ""
+      },
+      "Release Date": "",
+      "Image": "Product images available via Image API. Contact support@techspecs.io for access."
+    }
+  ]
+}

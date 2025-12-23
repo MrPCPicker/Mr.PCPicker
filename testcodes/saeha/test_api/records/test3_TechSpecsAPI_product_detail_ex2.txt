@@ -1,0 +1,145 @@
+{
+  "status": "success",
+  "data": {
+    "_id": "6429bf4cd23cbd21e868800b",
+    "Product": {
+      "Brand": "Samsung",
+      "Type": "All-in-One PC",
+      "Version": "DP700A7D-X01FR",
+      "Category": "Desktops",
+      "Model": "Samsung DP700A7D",
+      "english_id": "6429bf4cd23cbd21e868800b",
+      "Is Translated": true
+    },
+    "Inside": {
+      "RAM": {
+        "Maximum Memory Bandwidth": "25.6 GB/s",
+        "Size": "8 GB",
+        "Type": "DDR3-SDRAM",
+        "Maximum Clock Speed": "1333, 1600 MHz",
+        "Maximum Capacity": "8 GB",
+        "Slot Type": "DIMM",
+        "Slots": "2",
+        "Configuration": "2 x 4 GB",
+        "Clock Speed": "1600 MHz",
+        "Additional Features": ""
+      },
+      "Ports": {
+        "USB Type A 3,2 Gen 1 Ports": "2",
+        "USB Sleep-and-Charge Ports": "1",
+        "HDMI Ports": "2",
+        "USB 2,0 Ports": "3",
+        "Headphone Output Ports": "1",
+        "Ethernet RJ-45 Ports": "1",
+        "Ethernet Speed": "10, 100, 1000 Mbit/s",
+        "Additional Features": "Cable Lock Slot, Card Reader, Ethernet LAN, Microphone Input, USB Sleep-and-Charge"
+      },
+      "CPU": {
+        "Threads": "4",
+        "Socket": "LGA 1155 (Socket H2)",
+        "Lithography": "22 nm",
+        "Operating Modes": "64-bit",
+        "Bus Speed": "5 GT/s",
+        "Frequency": "2.3 GHz",
+        "RAM Types Supported": "DDR3 1333/1600",
+        "Motherboard Chipset": "Intel® H77 Express",
+        "Cache": "6 MB",
+        "Cache Type": "Smart Cache",
+        "Boost Frequency": "3.3 GHz",
+        "Bus Type": "DMI",
+        "Model": "i5-3570T",
+        "Family": "Intel® Core™ i5",
+        "Brand": "Intel",
+        "Number of Cores": "4",
+        "Codename": "Ivy Bridge",
+        "Maximum RAM Supported": "32 GB",
+        "Additional Features": ""
+      },
+      "Storage": {
+        "Memory Card Slots": "SD, SDHC, SDXC",
+        "Storage Drives": "1",
+        "HDDs": "1",
+        "HDD Interface": "SATA II",
+        "Optical Drive": "DVD Super Multi DL",
+        "HDD Speed": "5400 RPM",
+        "Type": "HDD",
+        "Additional Features": "HDD Password"
+      },
+      "GPU": {
+        "Memory Type": "GDDR5",
+        "Integrated Card Maximum Displays": "3",
+        "Additional Features": ""
+      },
+      "Audio": {
+        "System": "HD",
+        "Additional Features": "Built-in Speakers, Built-in Microphone"
+      },
+      "Software": {
+        "OS Version": "Windows 8",
+        "OS Architecture": "64-bit"
+      },
+      "Power": {
+        "Thermal Design Power (TDP)": "45 W",
+        "RMS Rated Power": "14 W",
+        "Additional Features": ""
+      },
+      "Wireless": {
+        "Wi-Fi Standard": "802.11a, 802.11b, 802.11g, 802.11n",
+        "Bluetooth Version": "4",
+        "Additional Features": "Bluetooth Support, Wi-Fi Support"
+      },
+      "Motherboard": {
+        "PCI Express Version": "3",
+        "Additional Features": ""
+      }
+    },
+    "Design": {
+      "Body": {
+        "Width With Stand (Longer Side)": "650.7 mm",
+        "Weight With Stand": "12.3 kg",
+        "Height With Stand (Shorter Side)": "482.1 mm",
+        "Colors": "Grey",
+        "Thickness With Stand": "189.7 mm",
+        "Additional Features": "",
+        "Colors_Array": [
+          "Grey"
+        ]
+      },
+      "Keyboard": {
+        "Additional Features": "Keyboard"
+      },
+      "Mouse": {
+        "Additional Features": ""
+      }
+    },
+    "Display": {
+      "Definition": "Full HD",
+      "Aspect Ratio": "16/9",
+      "Resolution (H x W)": "1920 x 1080 pixels",
+      "Diagonal": "27\"",
+      "Additional Features": "Touchscreen"
+    },
+    "Price": {
+      "MSRP": null
+    },
+    "Camera": {
+      "Additional Features": "Camera"
+    },
+    "Key Aspects": {
+      "MSRP": null,
+      "Colors": "Grey",
+      "RAM": "8 GB",
+      "Processor": "i5-3570T",
+      "Ports": "Cable Lock Slot, Card Reader, Ethernet LAN, Microphone Input, USB Sleep-and-Charge, 2 x USB Type A 3.2 Gen 1 Ports, 1 x USB Sleep-and-Charge Ports, 2 x HDMI Ports, 3 x USB 2.0 Ports, 1 x Headphone Output Ports, 1 x Ethernet RJ-45 Ports, Ethernet Speed",
+      "Audio": "HD",
+      "WiFi": "802.11a, 802.11b, 802.11g, 802.11n"
+    },
+    "Thumbnail": {
+      "Image_1": "https://thumbnail-techspecs-io.s3.amazonaws.com/thumbnail_1_6429bf4cd23cbd21e868800b.jpg",
+      "Image_2": "https://thumbnail-techspecs-io.s3.amazonaws.com/thumbnail_2_6429bf4cd23cbd21e868800b.jpg"
+    },
+    "english_id": "6429bf4cd23cbd21e868800b",
+    "is_translated": true,
+    "added_on": "2023-04-02T17:45:48.000Z"
+  }
+}

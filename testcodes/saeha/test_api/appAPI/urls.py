@@ -1,8 +1,19 @@
 from django.urls import path
-from . import views
+from .views import (
+    ImportProductSearchResponseAPIView,
+    ImportProductDetailResponseAPIView,
+    ProductSearchItemListAPIView,
+    ProductDetailListAPIView,
+    ProductDetailRetrieveAPIView,
+)
 
 urlpatterns = [
-    path("sync/", views.sync_products, name="sync_products"),  # POST
-    path("products/", views.product_list, name="product_list"),  # GET
-    path("products/<str:techspecs_id>/", views.product_detail, name="product_detail"),  # GET
+    # import endpoints (수집/적재)
+    path("import-search/", ImportProductSearchResponseAPIView.as_view()),
+    path("import-detail/", ImportProductDetailResponseAPIView.as_view()),
+
+    # 조회 endpoints
+    path("search-items/", ProductSearchItemListAPIView.as_view()),
+    path("details/", ProductDetailListAPIView.as_view()),
+    path("details/<str:techspecs_id>/", ProductDetailRetrieveAPIView.as_view()),
 ]
