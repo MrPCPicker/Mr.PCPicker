@@ -1,90 +1,138 @@
 <template>
-  <div class="community-container">
-    <div class="page-header">
-      <h1>커뮤니티 게시판</h1>
-      <div class="page-header-controls">
-        <div class="page-info">
-          <span>총 <strong>{{ totalPosts }}</strong>개의 게시글</span>
-          <span class="page-divider">|</span>
-          <span class="page-number">{{ currentPage }} / {{ totalPages }} 페이지</span>
+  <div class="community-page">
+    <div class="community-container">
+      <header class="page-header">
+        <div class="header-text">
+          <h1 class="title">커뮤니티</h1>
+          <p class="subtitle">Mr.PC Picker 사용자들과 정보를 공유하세요.</p>
         </div>
+        
+        <div class="page-header-controls">
+          <div class="page-info">
+            <span>총 <strong>{{ totalPosts }}</strong>개의 게시글</span>
+            <span class="page-divider"></span>
+            <span class="page-number">{{ currentPage }} / {{ totalPages }} 페이지</span>
+          </div>
+          <button 
+            v-if="isAuthenticated" 
+            class="write-btn" 
+            @click="writePost"
+          >
+            <i class="fas fa-edit"></i> 글쓰기
+          </button>
+        </div>
+      </header>
+
+      <nav class="category-filter">
         <button 
-          v-if="isAuthenticated" 
-          class="write-button-top" 
-          @click="writePost"
+          v-for="category in categories" 
+          :key="category.value"
+          :class="{ 'active': selectedCategory === category.value }"
+          @click="filterByCategory(category.value)"
         >
-          <i class="fas fa-pen"></i>
-          <span>글쓰기</span>
+          {{ category.label }}
         </button>
-      </div>
-    </div>
+      </nav>
 
-    <div class="category-filter">
-      <button 
-        v-for="category in categories" 
-        :key="category.value"
-        :class="{ 'active': selectedCategory === category.value }"
-        @click="filterByCategory(category.value)"
-      >
-        {{ category.label }}
-      </button>
-    </div>
-
-    <div class="post-list">
-      <div v-if="loading" class="loading">로딩 중...</div>
-      <div v-else-if="posts.length === 0" class="no-posts">
-        게시글이 없습니다.
-      </div>
-      <div 
-        v-else
-        v-for="post in posts" 
-        :key="post.id" 
-        class="post-item"
-      >
-        <div class="post-category" :class="getCategoryClass(post.category)">
-          {{ getCategoryLabel(post.category) }}
+      <div class="post-list">
+        <div v-if="loading" class="state-message">
+          <div class="loader"></div>
+          <p>게시글을 불러오고 있습니다...</p>
         </div>
-        <div class="post-content">
-          <router-link :to="`/community/${post.id}`" class="post-title">
-            {{ post.title }}
-          </router-link>
-          <p class="post-desc">{{ post.content.substring(0, 100) }}{{ post.content.length > 100 ? '...' : '' }}</p>
-          <div class="post-meta">
-            <span class="post-author">{{ post.author?.username }}</span>
-            <span class="post-date">{{ formatDate(post.created_at) }}</span>
-            <span class="post-views">조회 {{ post.views }}</span>
-            <span class="post-likes">좋아요 {{ post.like_count || 0 }}</span>
-            <span class="post-comments">댓글 {{ post.comment_count || 0 }}</span>
+        
+        <div v-else-if="posts.length === 0" class="state-message no-posts">
+          <i class="fas fa-folder-open"></i>
+          <p>등록된 게시글이 없습니다.</p>
+        </div>
+
+        <div 
+          v-else
+          v-for="post in posts" 
+          :key="post.id" 
+          class="post-card"
+          @click="goToPost(post.id)"
+        >
+          <div class="post-card-header">
+            <span class="post-category" :class="getCategoryClass(post.category)">
+              {{ getCategoryLabel(post.category) }}
+            </span>
+            <h3 class="post-title">{{ post.title }}</h3>
+          </div>
+          
+          <p class="post-excerpt">
+            {{ post.content.substring(0, 120) }}{{ post.content.length > 120 ? '...' : '' }}
+          </p>
+          
+          <div class="post-card-footer">
+            <div class="post-author-info">
+              <span class="author-name">{{ post.author?.username || '익명' }}</span>
+              <span class="dot">·</span>
+              <span class="post-date">{{ formatDate(post.created_at) }}</span>
+            </div>
+            
+            <div class="post-stats">
+              <span class="stat-item">
+                <i class="far fa-eye"></i>
+                <span class="stat-label">조회수</span>
+                <span class="stat-value">{{ post.views }}</span>
+              </span>
+              <span class="stat-item">
+                <i class="far fa-thumbs-up"></i>
+                <span class="stat-label">좋아요</span>
+                <span class="stat-value">{{ post.like_count || 0 }}</span>
+              </span>
+              <span class="stat-item">
+                <i class="far fa-comment"></i>
+                <span class="stat-label">댓글</span>
+                <span class="stat-value">{{ post.comment_count || 0 }}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="pagination">
-      <button 
-        v-for="page in pageRange" 
-        :key="page"
-        @click="goToPage(page)"
-        :class="{ 'active': currentPage === page }"
-      >
-        {{ page }}
-      </button>
+      <nav class="pagination-container">
+        <button 
+          class="page-nav-btn" 
+          :disabled="currentPage === 1"
+          @click="goToPage(currentPage - 1)"
+        >
+          &lt;
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            v-for="page in pageRange" 
+            :key="page"
+            @click="goToPage(page)"
+            :class="{ 'active': currentPage === page }"
+          >
+            {{ page }}
+          </button>
+        </div>
+
+        <button 
+          class="page-nav-btn" 
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          &gt;
+        </button>
+      </nav>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.js';
+import AuthService from '@/services/AuthService'; 
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const router = useRouter();
-const authStore = useAuthStore();
-
-const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isAuthenticated = ref(!!AuthService.getCurrentUser());
 
 const posts = ref([]);
 const loading = ref(false);
@@ -96,7 +144,7 @@ const selectedCategory = ref('');
 const categories = [
   { value: '', label: '전체' },
   { value: 'notice', label: '공지사항' },
-  { value: 'qna', label: 'Q&A' },
+  { value: 'qna', label: '질문답변' },
   { value: 'free', label: '자유게시판' },
 ];
 
@@ -128,10 +176,10 @@ const fetchPosts = async (page = 1) => {
     });
     posts.value = response.data.results || [];
     totalPosts.value = response.data.count || 0;
-    totalPages.value = Math.ceil(totalPosts.value / 10);
+    totalPages.value = Math.ceil(totalPosts.value / 10) || 1;
     currentPage.value = page;
   } catch (error) {
-    console.error('게시글을 불러오는 중 오류가 발생했습니다:', error);
+    console.error('Error fetching posts:', error);
   } finally {
     loading.value = false;
   }
@@ -162,200 +210,306 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'yyyy.MM.dd', { locale: ko });
 };
 
-const getCategoryClass = (category) => category || '';
+const getCategoryClass = (category) => category || 'free';
 
 const getCategoryLabel = (category) => {
   const categoryMap = {
     'notice': '공지',
-    'tip': '개발팁',
-    'qna': 'Q&A',
+    'qna': '질문',
     'free': '자유',
+    'tip': '팁',
   };
-  return categoryMap[category] || category;
+  return categoryMap[category] || '자유';
 };
 
 onMounted(() => {
   fetchPosts(1);
 });
-
-watch(() => router.currentRoute.value.query, (newQuery) => {
-  if (newQuery.page) {
-    const page = parseInt(newQuery.page, 10);
-    if (!isNaN(page) && page !== currentPage.value) {
-      fetchPosts(page);
-    }
-  }
-}, { immediate: true });
 </script>
 
 <style scoped>
+.community-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
 .community-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
-  min-height: 80vh;
 }
 
-/* Page Header */
+/* Header */
 .page-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #333;
+  margin-bottom: 32px;
 }
 
-.page-header h1 {
-  font-size: 26px;
+.title {
+  font-size: 32px;
   font-weight: 700;
-  margin: 0 0 16px 0;
-  color: #222;
+  color: #2f3a45;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #6c757d;
+  font-size: 16px;
+  margin-bottom: 24px;
 }
 
 .page-header-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 정보는 왼쪽, 버튼은 오른쪽 */
+  justify-content: space-between;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
 
 .page-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #666;
-  font-size: 15px;
+  font-size: 14px;
+  color: #6c757d;
 }
 
 .page-info strong {
-  color: #1976d2;
+  color: #1e6fd7;
 }
 
 .page-divider {
-  color: #eee;
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  background: #dee2e6;
+  margin: 0 12px;
 }
 
-.write-button-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #1976d2;
+.write-btn {
+  background-color: #2f3a45;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 14px;
+  border-radius: 8px;
+  padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
-.write-button-top:hover {
-  background-color: #1565c0;
+.write-btn:hover {
+  background-color: #1e6fd7;
+  transform: translateY(-1px);
 }
 
 /* Category Filter */
 .category-filter {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  flex-wrap: wrap;
 }
 
 .category-filter button {
-  padding: 6px 16px;
-  border: 1px solid #ddd;
+  padding: 8px 18px;
+  border: 1px solid #dee2e6;
   background: white;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 14px;
+  font-weight: 500;
+  color: #495057;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.category-filter button.active {
-  background-color: #1976d2;
-  color: white;
-  border-color: #1976d2;
+.category-filter button:hover {
+  border-color: #2f3a45;
+  color: #2f3a45;
 }
 
-/* Post List */
+.category-filter button.active {
+  background-color: #2f3a45;
+  color: white;
+  border-color: #2f3a45;
+}
+
+/* Post Cards */
 .post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 40px;
 }
 
-.post-item {
-  display: flex;
-  padding: 20px 16px;
-  border-bottom: 1px solid #f0f0f0;
+.post-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  border: 1px solid #f1f3f5;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
-.post-item:hover {
-  background-color: #f9f9f9;
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  border-color: #1e6fd7;
 }
 
-.post-category {
-  min-width: 70px;
-  height: 28px;
+.post-card-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 20px;
-}
-
-.post-category.notice { background-color: #e3f2fd; color: #1976d2; }
-.post-category.qna { background-color: #fff3e0; color: #f57c00; }
-.post-category.free { background-color: #f3e5f5; color: #8e24aa; }
-
-.post-content { flex: 1; overflow: hidden; }
-
-.post-title {
-  font-size: 17px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  color: #333;
-}
-
-.post-desc {
-  font-size: 14px;
-  color: #666;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
-.post-meta {
+.post-category {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.post-category.notice { background: #fff0f0; color: #e03131; }
+.post-category.qna { background: #e7f5ff; color: #1e6fd7; }
+.post-category.free { background: #f8f9fa; color: #495057; }
+
+.post-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f3a45;
+  margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-excerpt {
+  font-size: 14px;
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #f8f9fa;
+}
+
+.post-author-info {
+  font-size: 13px;
+  color: #868e96;
+}
+
+.author-name {
+  font-weight: 600;
+  color: #495057;
+}
+
+.dot { margin: 0 8px; }
+
+/* Stat Items */
+.post-stats {
   display: flex;
   gap: 16px;
   font-size: 13px;
-  color: #888;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #868e96;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: #adb5bd;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #495057;
+}
+
+.stat-item i {
+  font-size: 14px;
+  color: #dee2e6;
 }
 
 /* Pagination */
-.pagination {
+.pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.page-numbers {
+  display: flex;
   gap: 8px;
 }
 
-.pagination button {
-  min-width: 36px;
-  height: 36px;
-  border: 1px solid #e0e0e0;
+.page-numbers button, .page-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
   background: white;
-  border-radius: 4px;
+  color: #495057;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-.pagination button.active {
-  background-color: #1976d2;
+.page-numbers button.active {
+  background-color: #1e6fd7;
   color: white;
-  border-color: #1976d2;
+  border-color: #1e6fd7;
 }
 
-.loading, .no-posts {
+.page-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* States */
+.state-message {
   text-align: center;
-  padding: 60px 0;
-  color: #888;
+  padding: 80px 0;
+}
+
+.loader {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #1e6fd7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .page-header-controls {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .stat-label {
+    display: none; /* 모바일에선 글자 숨김 */
+  }
 }
 </style>

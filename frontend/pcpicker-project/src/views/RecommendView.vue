@@ -46,7 +46,7 @@
               <button
                 class="plus-badge"
                 :class="{ 'in-cart': isSelected(item.id) }"
-                @click="handlePlusClick(item)"
+                @click="handlePlusClick(item, index)"
                 :aria-pressed="isSelected(item.id)"
               >
                 {{ isSelected(item.id) ? '-' : '+' }}
@@ -243,13 +243,37 @@ export default {
       saveCartToStorage()
     }
 
-    const handlePlusClick = (item) => {
+    const handlePlusClick = (item, index) => {
       if (!isAuthenticated.value) {
         showRegisterModal.value = false
         showLoginModal.value = true
         return
       }
-      toggleSelectionAndCart(item)
+      
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
+      
+      // Always add to cart on first click
+      if (existingItemIndex === -1) {
+        const cartItem = {
+          id: item.id,
+          name: item.title,
+          price: item.price,
+          quantity: 1,
+          image: getThumbSrc(item, index) // Use the same image as shown in the list
+        };
+        cart.push(cartItem);
+        selectedIds.value.push(item.id);
+        
+        // Save to localStorage
+        localStorage.setItem('cart', JSON.stringify(cart));
+        // Notify other components about cart update
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('cart-updated'));
+        
+        // Show success message or feedback
+        alert(`${item.title}이(가) 장바구니에 추가되었습니다.`);
+      }
     }
 
     const closeLoginModal = () => {

@@ -20,9 +20,9 @@
     </div>
 
     <div class="post-actions">
-      <button class="like-button" @click="toggleLike">
-        <i :class="[isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up']"></i>
-        <span>좋아요 ({{ post.like_count || 0 }})</span>
+      <button class="like-button" :class="{ 'liked': isLiked }" @click="toggleLike">
+        <i :class="[isLiked ? 'fas fa-heart' : 'far fa-heart']"></i>
+        <span>좋아요</span>
       </button>
       <router-link to="/community" class="back-button">목록으로</router-link>
     </div>
@@ -75,6 +75,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AuthService from '@/services/AuthService';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -84,56 +85,65 @@ const router = useRouter();
 const postId = route.params.id;
 
 // 상태 관리
-const post = ref({});
+const post = ref({
+  like_count: 0,
+  author: null
+});
 const isLiked = ref(false);
 const comments = ref([]);
 const newComment = ref('');
 const editingId = ref(null);
 const editContent = ref('');
 
-// --- 사용자 인증 정보 관리 ---
-const getCurrentUser = () => {
-  try {
-    const userData = localStorage.getItem('user');
-    if (!userData) return null;
-    const parsed = JSON.parse(userData);
-    // 로그 구조 분석 결과: 실제 정보는 .user 안에 있음
-    return {
-      token: parsed.access,
-      info: parsed.user 
-    };
-  } catch (error) {
-    return null;
-  }
-};
+// --- 인증 로직 ---
+const getCurrentUser = () => AuthService.getCurrentUser()?.user || null;
 
-const getAuthToken = () => getCurrentUser()?.token;
-
-// [게시글 본인 확인] 
 const isPostAuthor = computed(() => {
   const user = getCurrentUser();
-  if (!user?.info || !post.value?.author) return false;
-  return (user.info.username === post.value.author.username) || (user.info.id == post.value.author.id);
+  if (!user || !post.value?.author) return false;
+  return (user.username === post.value.author.username) || (user.id == post.value.author.id);
 });
 
-// [댓글 본인 확인]
 const isCommentAuthor = (comment) => {
   const user = getCurrentUser();
-  if (!user?.info || !comment?.author) return false;
-  return (user.info.username === comment.author.username) || (user.info.id == comment.author.id);
+  if (!user || !comment?.author) return false;
+  return (user.username === comment.author.username) || (user.id == comment.author.id);
 };
 
 // --- API 함수 ---
 
 const fetchPost = async () => {
   try {
-    const response = await axios.get(`http://localhost:8000/articles/${postId}/`);
+    const response = await axios.get(`http://localhost:8000/articles/${postId}/`, {
+      headers: AuthService.getAuthHeader()
+    });
     post.value = response.data;
-    // 백엔드에서 준 liked 상태 반영 (있을 경우)
-    if (response.data.liked !== undefined) isLiked.value = response.data.liked;
+    isLiked.value = response.data.is_liked || response.data.liked || false;
     await fetchComments(); 
   } catch (error) {
     console.error('게시글 로드 실패:', error);
+  }
+};
+
+const toggleLike = async () => {
+  if (!AuthService.getCurrentUser()) {
+    alert('로그인이 필요합니다.');
+    return;
+  }
+
+  try {
+    const res = await axios.post(`http://localhost:8000/articles/${postId}/like/`, {}, {
+      headers: AuthService.getAuthHeader()
+    });
+
+    // 서버 응답 데이터를 화면에 즉시 반영
+    if (res.data) {
+      post.value.like_count = res.data.like_count;
+      isLiked.value = res.data.is_liked !== undefined ? res.data.is_liked : res.data.liked;
+    }
+  } catch (err) {
+    console.error('좋아요 토글 실패:', err);
+    alert('좋아요 처리 중 오류가 발생했습니다.');
   }
 };
 
@@ -147,15 +157,14 @@ const fetchComments = async () => {
 };
 
 const createComment = async () => {
-  const token = getAuthToken();
-  if (!token) { alert('로그인이 필요합니다.'); return; }
+  if (!AuthService.getCurrentUser()) { alert('로그인이 필요합니다.'); return; }
   if (!newComment.value.trim()) return;
 
   try {
     await axios.post(
       `http://localhost:8000/articles/${postId}/comments/`,
       { content: newComment.value },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: AuthService.getAuthHeader() }
     );
     newComment.value = '';
     await fetchComments(); 
@@ -163,8 +172,6 @@ const createComment = async () => {
     alert('댓글 등록 실패');
   }
 };
-
-
 
 const startEdit = (comment) => {
   editingId.value = comment.id;
@@ -177,56 +184,51 @@ const cancelEdit = () => {
 };
 
 const updateComment = async (commentId) => {
-  const token = getAuthToken();
   try {
     await axios.put(
       `http://localhost:8000/articles/comments/${commentId}/`,
       { content: editContent.value },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: AuthService.getAuthHeader() }
     );
     editingId.value = null;
     await fetchComments();
   } catch (error) {
-    console.error('Error updating comment:', error);
-    alert('댓글 수정에 실패했습니다: ' + (error.response?.data?.detail || error.message));
+    alert('댓글 수정 실패');
   }
 };
 
 const deleteComment = async (commentId) => {
   if (!confirm('정말로 삭제하시겠습니까?')) return;
-  const token = getAuthToken();
   try {
     await axios.delete(`http://localhost:8000/articles/comments/${commentId}/`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: AuthService.getAuthHeader()
     });
     await fetchComments();
   } catch (error) {
-    console.error('Error deleting comment:', error);
-    alert('댓글 삭제에 실패했습니다: ' + (error.response?.data?.detail || error.message));
+    alert('댓글 삭제 실패');
   }
 };
-const editPost = () => {
-  router.push(`/community/edit/${postId}`);
+
+const deletePost = async () => {
+  if (!confirm('게시글을 삭제하시겠습니까?')) return;
+  try {
+    await axios.delete(`http://localhost:8000/articles/${postId}/`, {
+      headers: AuthService.getAuthHeader()
+    });
+    router.push('/community');
+  } catch (error) {
+    alert('게시글 삭제 실패');
+  }
 };
 
-const toggleLike = async () => {
-  const token = getAuthToken();
-  if (!token) { alert('로그인이 필요합니다.'); return; }
-  try {
-    const res = await axios.post(`http://localhost:8000/articles/${postId}/like/`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    post.value.like_count = res.data.like_count;
-    isLiked.value = res.data.liked;
-  } catch (err) { console.error(err); }
+const editPost = () => {
+  router.push(`/community/edit/${postId}`);
 };
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
   return format(new Date(dateString), 'yyyy.MM.dd HH:mm', { locale: ko });
 };
-
-
 
 onMounted(fetchPost);
 </script>
@@ -250,24 +252,56 @@ onMounted(fetchPost);
 /* 본문 */
 .post-content { min-height: 250px; line-height: 1.8; font-size: 16px; margin-bottom: 50px; color: #333; }
 
-/* 액션 */
+/* 액션 바 */
 .post-actions { display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 30px; margin-bottom: 50px; }
-.like-button { border: 1px solid #ddd; background: white; padding: 10px 24px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.2s; }
-.like-button:hover { background: #f9f9f9; border-color: #1976d2; color: #1976d2; }
+
+/* 하트 좋아요 버튼 커스텀 디자인 */
+.like-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 2px solid #ff4d4f; /* 선명한 레드 테두리 */
+  padding: 10px 20px;
+  border-radius: 50px; /* 캡슐 모양 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #ff4d4f;
+}
+
+.like-button i {
+  font-size: 20px;
+  color: #ff4d4f;
+}
+
+/* 눌렀을 때(Liked) 상태 디자인 */
+.like-button.liked {
+  background: #ff4d4f;
+  color: white;
+}
+
+.like-button.liked i {
+  color: white; /* 배경이 빨간색일 때 하트는 흰색으로 */
+}
+
+.like-button:hover {
+  transform: scale(1.05); /* 마우스 올리면 살짝 커짐 */
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
+}
+
 .back-button { background: #1976d2; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; }
 
-/* 댓글 섹션 */
+/* 댓글 섹션 (기존 디자인 유지) */
 .comment-section { background: #fcfcfc; border-radius: 12px; padding: 30px; border: 1px solid #eee; }
 .comment-section h3 { font-size: 18px; margin-bottom: 25px; font-weight: 700; }
 .comment-section h3 span { color: #1976d2; }
 
-/* 댓글 작성창 */
 .comment-write { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 .comment-write textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; margin-bottom: 10px; }
 .comment-write-actions { display: flex; justify-content: flex-end; }
 .btn-comment-submit { background: #333; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
 
-/* 댓글 리스트 */
 .comment-item { padding: 20px 0; border-bottom: 1px solid #eee; }
 .comment-item:last-child { border-bottom: none; }
 .comment-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -275,15 +309,13 @@ onMounted(fetchPost);
 .comment-date { font-size: 13px; color: #aaa; }
 .comment-content { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 12px; white-space: pre-wrap; }
 
-/* 댓글 액션 */
 .comment-actions { display: flex; gap: 12px; }
 .comment-actions button { background: none; border: none; color: #aaa; font-size: 13px; cursor: pointer; text-decoration: underline; padding: 0; }
 .comment-actions button:hover { color: #666; }
 
-/* 댓글 수정 폼 전용 */
 .comment-edit-form { width: 100%; background: #f0f0f0; padding: 15px; border-radius: 8px; }
 .comment-edit-form textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: none; margin-bottom: 10px; }
 .edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.btn-save { background: #1976d2; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
+.btn-save { background: #3f404162; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
 .btn-cancel { background: #ccc; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
 </style>
