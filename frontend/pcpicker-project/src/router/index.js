@@ -59,6 +59,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('@/views/CartView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/community/edit/:id',
       name: 'PostEdit',
       component: PostEditView,

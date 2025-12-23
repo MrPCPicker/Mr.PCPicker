@@ -18,6 +18,9 @@
       <div class="nav-actions">
         <template v-if="isAuthenticated">
           <span class="welcome-text">Welcome back, {{ userName }}님 👋</span>
+          <router-link to="/cart" class="cart-icon">
+            🛒
+          </router-link>
           <router-link to="/profile" class="nav-signup">My Page</router-link>
           <button class="nav-logout-btn" @click="handleLogout">
             Logout
@@ -134,6 +137,25 @@ export default {
       showRegisterModal.value = false
     }
 
+    // Cart functionality
+    const cartItemCount = ref(0)
+    
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]')
+      cartItemCount.value = cart.reduce((total, item) => total + (item.quantity || 1), 0)
+    }
+    
+    onMounted(() => {
+      updateCartCount()
+      window.addEventListener('storage', updateCartCount)
+      window.addEventListener('cart-updated', updateCartCount)
+    })
+    
+    onUnmounted(() => {
+      window.removeEventListener('storage', updateCartCount)
+      window.removeEventListener('cart-updated', updateCartCount)
+    })
+
     return {
       isAuthenticated,
       userName,
@@ -239,6 +261,41 @@ export default {
   border-color: #d1d5db;
   color: #111827;
 }
+
+/* Cart Icon Styles */
+.cart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #2f3a45;
+  text-decoration: none;
+  padding: 0 8px;
+  transition: transform 0.2s;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
+  color: #1e6fd7;
+}
+
+.cart-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: #ff4d4f;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  border: 2px solid #ffffff;
+}
+
 @media (max-width: 768px) {
   .nav-links {
     display: none;
