@@ -142,9 +142,10 @@ const totalPosts = ref(0);
 const selectedCategory = ref('');
 
 const categories = [
-  { value: '', label: '전체' },
+  { value: 'all', label: '전체' },
   { value: 'notice', label: '공지사항' },
-  { value: 'qna', label: '질문답변' },
+  { value: 'qna', label: 'Q&A' },
+  { value: 'estimate', label: '견적질문' },
   { value: 'free', label: '자유게시판' },
 ];
 
@@ -168,18 +169,45 @@ const pageRange = computed(() => {
 const fetchPosts = async (page = 1) => {
   try {
     loading.value = true;
-    const response = await axios.get('http://localhost:8000/articles/', {
-      params: {
-        page,
-        category: selectedCategory.value || undefined,
-      },
-    });
-    posts.value = response.data.results || [];
-    totalPosts.value = response.data.count || 0;
-    totalPages.value = Math.ceil(totalPosts.value / 10) || 1;
-    currentPage.value = page;
+    // Try to fetch from API first
+    try {
+      const response = await axios.get('http://localhost:8000/articles/', {
+        params: {
+          page,
+          category: selectedCategory.value === 'all' ? '' : selectedCategory.value,
+        },
+      });
+      posts.value = response.data.results || [];
+      totalPosts.value = response.data.count || 0;
+      totalPages.value = Math.ceil(totalPosts.value / 10) || 1;
+      currentPage.value = page;
+    } catch (apiError) {
+      console.warn('API fetch failed, falling back to localStorage', apiError);
+      
+      // Fallback to localStorage
+      const savedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
+      
+      // Filter by category if selected
+      let filteredPosts = [...savedPosts];
+      if (selectedCategory.value && selectedCategory.value !== 'all') {
+        filteredPosts = savedPosts.filter(post => post.type === selectedCategory.value);
+      }
+      
+      // Simple pagination for localStorage
+      const itemsPerPage = 10;
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      
+      posts.value = filteredPosts.slice(startIndex, endIndex);
+      totalPosts.value = filteredPosts.length;
+      totalPages.value = Math.ceil(filteredPosts.length / itemsPerPage) || 1;
+      currentPage.value = page;
+    }
   } catch (error) {
     console.error('Error fetching posts:', error);
+    posts.value = [];
+    totalPosts.value = 0;
+    totalPages.value = 1;
   } finally {
     loading.value = false;
   }
@@ -202,7 +230,7 @@ const goToPost = (postId) => {
 };
 
 const writePost = () => {
-  router.push('/community/write');
+  router.push({ name: 'write-post' });
 };
 
 const formatDate = (dateString) => {
@@ -210,12 +238,13 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'yyyy.MM.dd', { locale: ko });
 };
 
-const getCategoryClass = (category) => category || 'free';
+const getCategoryClass = (category) => category === 'estimate' ? 'qna' : (category || 'free');
 
 const getCategoryLabel = (category) => {
   const categoryMap = {
     'notice': '공지',
     'qna': '질문',
+    'estimate': '견적',
     'free': '자유',
     'tip': '팁',
   };
@@ -302,10 +331,20 @@ onMounted(() => {
 }
 
 /* Category Filter */
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
 .category-filter {
   display: flex;
   gap: 10px;
-  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
@@ -394,6 +433,9 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
+  text-overflow: ellipsis;
+  max-height: 3.2em;
 }
 
 .post-card-footer {

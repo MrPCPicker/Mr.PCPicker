@@ -10,6 +10,7 @@ class Article(models.Model):
         ('tip', '개발팁'),
         ('qna', 'Q&A'),
         ('free', '자유게시판'),
+        ('estimate', '견적 요청'),
     ]
     
     title = models.CharField('제목', max_length=100)
