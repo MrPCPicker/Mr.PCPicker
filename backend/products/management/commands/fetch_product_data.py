@@ -19,7 +19,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **kwargs):
         all_products = []
-        categories = ["Laptops", "Desktops"]  # 검색할 제품 카테고리
+        categories = ["Laptops", "Desktops"]  # 검색할 제품 카테고리 "Laptops", "Desktops"
 
         # API 키 확인
         if not all([hasattr(settings, 'API_KEY'), hasattr(settings, 'API_ID')]):
@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         # 제품 검색
         for category in categories:
-            for page in range(20):  # page 0부터 19까지 반복
+            for page in range(20):  # page 0부터 19까지 반복, 20
                 params = {
                     "query": category,
                     "page": page,
