@@ -1,70 +1,70 @@
 from django.db import models
 
-# Create your models here.
-class Product(models.Model):
-    # --- identifiers / basic ---
-    techspecs_id = models.CharField(max_length=64, unique=True)  # data._id or search.Product.id
-    english_id = models.CharField(max_length=64, blank=True, null=True)
 
-    brand = models.CharField(max_length=100, blank=True, null=True)
-    category = models.CharField(max_length=50, blank=True, null=True)
-    model_name = models.CharField(max_length=255, blank=True, null=True)
-    version = models.CharField(max_length=255, blank=True, null=True)
-    product_type = models.CharField(max_length=255, blank=True, null=True)  # e.g., All-in-One PC
+class ProductSearchItem(models.Model):
+    """
+    TechSpecs product search의 data[] 한 항목을 저장.
+    (status, total_results 등은 저장 안 함)
+    """
+    techspecs_id = models.CharField(max_length=64, unique=True, db_index=True)  # Product.id
+    brand = models.CharField(max_length=128, blank=True, db_index=True)
+    category = models.CharField(max_length=128, blank=True, db_index=True)
+    model_name = models.CharField(max_length=256, blank=True, db_index=True)   # Product.Model
+    version = models.CharField(max_length=128, blank=True, db_index=True)      # Product.Version
+    thumbnail_url = models.URLField(blank=True)                                # Product.Thumbnail
+    release_date = models.CharField(max_length=64, blank=True)                 # "Release Date" (문자 그대로 보관)
+    image_note = models.CharField(max_length=256, blank=True)                  # "Image" 필드가 메시지일 수도 있어서
 
-    thumbnail_1 = models.URLField(blank=True, null=True)
-    thumbnail_2 = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    # --- price ---
-    msrp = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    def __str__(self) -> str:
+        return f"[{self.brand}] {self.model_name} ({self.version})"
 
-    # --- CPU ---
-    cpu_brand = models.CharField(max_length=100, blank=True, null=True)
-    cpu_family = models.CharField(max_length=100, blank=True, null=True)
-    cpu_model = models.CharField(max_length=100, blank=True, null=True)
-    cpu_cores = models.IntegerField(blank=True, null=True)
-    cpu_base_freq = models.CharField(max_length=50, blank=True, null=True)   # "1 GHz"
-    cpu_boost_freq = models.CharField(max_length=50, blank=True, null=True)  # "3.6 GHz"
 
-    # --- GPU ---
-    igpu = models.CharField(max_length=255, blank=True, null=True)
-    dgpu = models.CharField(max_length=255, blank=True, null=True)  # 없으면 None
+class ProductDetail(models.Model):
+    """
+    TechSpecs product detail의 data{}를 저장.
+    - 핵심 컬럼(추천/필터/정렬용)
+    - 나머지는 raw_json에 통째로 저장
+    """
+    # search item과 1:1로 연결(없을 수도 있으니 null 허용)
+    search_item = models.OneToOneField(
+        ProductSearchItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="detail",
+    )
 
-    # --- RAM ---
-    ram_size = models.CharField(max_length=50, blank=True, null=True)         # "8 GB"
-    ram_type = models.CharField(max_length=50, blank=True, null=True)         # "DDR4-SDRAM"
-    ram_clock = models.CharField(max_length=50, blank=True, null=True)        # "3200 MHz"
-    ram_max = models.CharField(max_length=50, blank=True, null=True)          # "64 GB"
-    ram_slots = models.IntegerField(blank=True, null=True)
+    techspecs_id = models.CharField(max_length=64, unique=True, db_index=True)  # detail의 _id(or english_id)
+    brand = models.CharField(max_length=128, blank=True, db_index=True)
+    category = models.CharField(max_length=128, blank=True, db_index=True)
+    model_name = models.CharField(max_length=256, blank=True, db_index=True)
+    version = models.CharField(max_length=128, blank=True, db_index=True)
 
-    # --- Storage ---
-    storage_type = models.CharField(max_length=50, blank=True, null=True)     # "SSD"/"HDD"
-    ssd_capacity = models.CharField(max_length=50, blank=True, null=True)     # "512 GB"
-    hdd_capacity = models.CharField(max_length=50, blank=True, null=True)     # "1 TB"
+    # 추천에 자주 쓰는 핵심들(예시)
+    os = models.CharField(max_length=128, blank=True, db_index=True)            # Inside.Software.OS
+    os_version = models.CharField(max_length=128, blank=True)
+    cpu = models.CharField(max_length=256, blank=True, db_index=True)           # Inside.Processor.CPU
+    gpu = models.CharField(max_length=256, blank=True, db_index=True)           # Inside.Processor.GPU
+    ram_gb = models.FloatField(null=True, blank=True, db_index=True)            # "6 GB" -> 6
+    storage_gb_min = models.IntegerField(null=True, blank=True, db_index=True)  # "128 GB, 256 GB..." -> 128
+    weight_g = models.IntegerField(null=True, blank=True, db_index=True)        # Design.Body.Weight_g
 
-    # --- Display (AIO일 때 핵심) ---
-    display_diagonal = models.CharField(max_length=50, blank=True, null=True)     # '23.8"'
-    display_resolution = models.CharField(max_length=50, blank=True, null=True)   # "1920 x 1080 pixels"
-    display_panel = models.CharField(max_length=50, blank=True, null=True)        # "IPS"
+    display_size_in = models.FloatField(null=True, blank=True, db_index=True)   # Display.Diagonal_in
+    refresh_rate_hz = models.IntegerField(null=True, blank=True, db_index=True) # Display.Refresh Rate
 
-    # --- Wireless / OS ---
-    wifi_standard = models.CharField(max_length=100, blank=True, null=True)       # "Wi-Fi 6 (802.11ax)"
-    bluetooth_version = models.CharField(max_length=50, blank=True, null=True)
-    os_version = models.CharField(max_length=100, blank=True, null=True)
+    msrp_text = models.CharField(max_length=256, blank=True)                    # Price.MSRP (문자 그대로)
 
-    # --- Ports (요약) ---
-    usb_c = models.IntegerField(blank=True, null=True)
-    usb_a_gen2 = models.IntegerField(blank=True, null=True)
-    usb_a_gen1 = models.IntegerField(blank=True, null=True)
-    hdmi_ports = models.IntegerField(blank=True, null=True)
-    dp_ports = models.IntegerField(blank=True, null=True)
-    ethernet_ports = models.IntegerField(blank=True, null=True)
+    # 방대한 전체 원본 저장(JSONField 가능하면 JSONField 권장)
+    # SQLite에서도 Django JSONField는 가능하지만, 환경 따라 TextField가 더 안정적일 수 있어 TextField로 둠.
+    raw_json = models.TextField()
 
-    # --- keep the rest for later ---
-    raw_search = models.JSONField(blank=True, null=True)   # product search 원본(선택)
-    raw_detail = models.JSONField(blank=True, null=True)   # product detail 원본(보류용)
+    added_on = models.DateTimeField(null=True, blank=True)  # detail.added_on 파싱 가능하면 저장
 
-    fetched_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.brand} {self.model_name} ({self.version})"
+    def __str__(self) -> str:
+        return f"Detail: [{self.brand}] {self.model_name} ({self.version})"
