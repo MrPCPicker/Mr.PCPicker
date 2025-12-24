@@ -27,5 +27,6 @@ requests
 django-cors-headers
 djangorestframework-simplejwt
 
-
 Pillow
+beautifulsoup4
+requests
