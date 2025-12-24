@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 from .services.gms_client import call_gms_openai
-from products.models import Laptop
+from products.models import ProductDetailSpec
 
 import json
 
@@ -43,13 +43,13 @@ def _normalize_lines(items):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def recommend_laptops(request):
+def recommend_computers(request):
     """
     SearchBar 에서 입력한 니즈(query)를 받아서
     GMS 를 한 번만 호출해 추천 결과를 반환.
     """
     query = (request.data.get("query") or "").strip()
-    print(f"[VIEW] recommend_laptops called, query='{query}'")
+    print(f"[VIEW] recommend_computers called, query='{query}'")
 
     if not query:
         return Response(
@@ -57,57 +57,53 @@ def recommend_laptops(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # 1) 후보 노트북 (토큰/크레딧 절약을 위해 개수 제한)
-    #    필요하면 6 대신 8, 10 등으로 늘려도 됨.
-    candidates = Laptop.objects.all()[:6]
+    # 0) 후보 컴퓨터 목록 구성 (노트북/데스크탑/AIO)
+    candidates = ProductDetailSpec.objects.filter(
+        product_type__in=["laptop", "desktop", "aio"]
+    )[:12]
 
-    # JSON에 꼭 필요한 필드만 사용 (id, name, cpu, gpu, ram, storage, price)
-    laptop_list = []
-    for lap in candidates:
-        name = getattr(lap, "name", None) or getattr(lap, "model_name", "")
-        cpu = getattr(lap, "cpu", "")
-        gpu = getattr(lap, "gpu", "")
-        ram = getattr(lap, "ram", "")
-        storage = getattr(lap, "storage", "")
-        price = getattr(lap, "price", None)
-
-        laptop_list.append({
-            "id": lap.id,
-            "name": name,
-            "cpu": cpu,
-            "gpu": gpu,
-            "ram": ram,
-            "storage": storage,
-            "price": int(price) if price is not None else None,
+    computer_list = []
+    for pc in candidates:
+        computer_list.append({
+            "id": pc.id,
+            "product_type": pc.product_type,
+            "brand": pc.brand,
+            "model": pc.model,
+            "cpu": pc.cpu,
+            "gpu": pc.gpu,
+            "ram_gb": pc.ram_gb,
+            "storage_gb": pc.storage_gb,
+            "os": pc.os,
+            "price_text": pc.price_text,
         })
 
-    # 2) GMS 프롬프트 (summary 제거 버전)
+    # 1) GMS 프롬프트를 사용해 GMS 호출
     prompt = f"""
-당신은 노트북 추천 어시스턴트입니다.
+    당신은 컴퓨터 추천 어시스턴트입니다.
 
-[요구사항]과 [후보 노트북 목록]을 보고,
-사용자에게 가장 잘 맞는 노트북 3대를 선택하세요.
+    [요구사항]과 [후보 컴퓨터 목록]을 보고,
+    사용자의 요구에 가장 적합한 컴퓨터 3대를 선택하세요.
 
-- "needs": 사용자의 상황/용도를 개조식 한국어 문장으로 정리 (예: "대학생, 문서 작업 위주")
-- "recommends": 권장 사양을 수치 중심 개조식 한국어 문장으로 작성 (예: "16GB RAM 이상")
-- needs / recommends 문자열에는 불릿 기호(-, •, 숫자.)를 넣지 말고 문장만 적으세요.
+    - "needs": 사용자의 상황/용도를 개조식 한국어 문장으로 정리 (예: "대학생, 문서 작업 위주")
+    - "recommends": 권장 사양을 수치 중심 개조식 한국어 문장으로 작성 (예: "16GB RAM 이상")
+    - needs / recommends 문자열에는 불릿 기호(-, •, 숫자.)를 넣지 말고 문장만 적으세요.
 
-[요구사항]
-{query}
+    [요구사항]
+    {query}
 
-[후보 노트북 목록]
-{json.dumps(laptop_list, ensure_ascii=False)}
+    [후보 컴퓨터 목록]
+    {json.dumps(computer_list, ensure_ascii=False)}
 
-아래 JSON 형식만, 추가 설명 없이 출력하세요:
+    아래 JSON 형식만, 추가 설명 없이 출력하세요:
 
-{{
-  "choice_ids": [1, 2, 3],
-  "needs": ["...", "..."],
-  "recommends": ["...", "..."]
-}}
-"""
+    {{
+      "choice_ids": [1, 2, 3],
+      "needs": ["...", "..."],
+      "recommends": ["...", "..."]
+    }}
+    """
 
-    # ✅ GMS 호출 에러 처리
+    # 2) GMS 호출
     try:
         raw = call_gms_openai(prompt)
     except Exception as e:
@@ -134,23 +130,24 @@ def recommend_laptops(request):
     needs = _normalize_lines(gms_data.get("needs"))
     recommends = _normalize_lines(gms_data.get("recommends"))
 
-    # 4) 선택된 id 기준으로 실제 Laptop 조회
-    db_laptops = Laptop.objects.filter(id__in=choice_ids)
-    by_id = {lap.id: lap for lap in db_laptops}
+    # 4) 선택된 id 기준으로 실제 ProductDetailSpec 조회
+    db_products = ProductDetailSpec.objects.filter(id__in=choice_ids)
+    by_id = {p.id: p for p in db_products}
 
+    # 5) 검색된 3개의 적합한 제품을 반환 (GMS가 준 순서 유지)
     results = []
-    for lid in choice_ids:
-        lap = by_id.get(lid)
-        if not lap:
+    for pid in choice_ids:
+        prod = by_id.get(pid)
+        if not prod:
             continue
 
-        name = getattr(lap, "name", None) or getattr(lap, "model_name", "")
-        price = getattr(lap, "price", None)
-        image_url = getattr(lap, "image_url", "") or getattr(lap, "thumbnail_url", "")
-        cpu = getattr(lap, "cpu", "")
-        gpu = getattr(lap, "gpu", "")
-        ram = getattr(lap, "ram", "")
-        storage = getattr(lap, "storage", "")
+        name = f"{prod.brand} {prod.model}".strip()
+        price = prod.price_text
+        image_url = ""
+        cpu = prod.cpu
+        gpu = prod.gpu
+        ram = prod.ram_gb
+        storage = prod.storage_gb
 
         specs = []
         if cpu:
@@ -158,14 +155,14 @@ def recommend_laptops(request):
         if gpu:
             specs.append(f"GPU: {gpu}")
         if ram:
-            specs.append(f"RAM: {ram}")
+            specs.append(f"RAM: {ram}GB")
         if storage:
-            specs.append(f"Storage: {storage}")
+            specs.append(f"Storage: {storage}GB")
 
         results.append({
-            "id": lid,
+            "id": prod.id,
             "title": name,
-            "price": int(price) if price is not None else None,
+            "price": price,
             "imageUrl": image_url,
             "specs": specs,
         })

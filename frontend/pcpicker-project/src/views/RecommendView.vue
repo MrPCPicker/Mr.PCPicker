@@ -1,11 +1,10 @@
-<!-- src/views/RecommendView.vue -->
 <template>
   <div class="recommend-page">
     <section class="recommend-hero">
       <div class="recommend-inner">
-        <!-- 왼쪽: 추천 노트북 카드 리스트 (최대 3개) -->
+        <!-- 왼쪽: 추천 컴퓨터 카드 리스트 (최대 3개) -->
         <div class="left-column">
-          <h2 class="left-title">Recommended laptops for you</h2>
+          <h2 class="left-title">Recommended computers for you</h2>
 
           <p v-if="loading" class="state-text">추천을 불러오는 중입니다...</p>
           <p v-else-if="error" class="state-text error">
@@ -19,30 +18,22 @@
               class="product-card"
             >
               <div class="product-thumb">
-                <!-- 🔹 item.imageUrl이 있으면 그거, 없으면 index별 목업 이미지 3개 사용 -->
                 <img
                   :src="getThumbSrc(item, index)"
-                  :alt="item.title || '추천 노트북 목업 이미지'"
+                  :alt="item.title || '추천 컴퓨터 목업 이미지'"
                 />
-
-                <div class="price-tag">
-                  {{ formatPrice(item.price) }}
-                </div>
+                <div class="price-tag">{{ formatPrice(item.price) }}</div>
               </div>
 
               <div class="product-body">
                 <h3 class="product-title">{{ item.title }}</h3>
                 <ul class="product-specs">
-                  <li
-                    v-for="(spec, sIdx) in (item.specs || [])"
-                    :key="sIdx"
-                  >
+                  <li v-for="(spec, sIdx) in (item.specs || [])" :key="sIdx">
                     {{ spec }}
                   </li>
                 </ul>
               </div>
 
-              <!-- 기본은 +, 클릭하면 이 화면 기준으로만 - 토글 -->
               <button
                 class="plus-badge"
                 :class="{ 'in-cart': isSelected(item.id) }"
@@ -53,10 +44,7 @@
               </button>
             </article>
 
-            <p
-              v-if="!topThree.length"
-              class="state-text"
-            >
+            <p v-if="!topThree.length" class="state-text">
               조건에 맞는 추천 결과가 없습니다.
             </p>
           </template>
@@ -77,7 +65,7 @@
               <div class="loader-wrap">
                 <div class="spinner"></div>
                 <p class="loading-text">
-                  요구사항을 분석하고 맞는 노트북을 찾는 중입니다...
+                  요구사항을 분석하고 맞는 컴퓨터를 찾는 중입니다...
                 </p>
               </div>
             </template>
@@ -85,20 +73,14 @@
             <template v-else>
               <h4>Needs</h4>
               <ul>
-                <li
-                  v-for="(need, nIdx) in needsList"
-                  :key="'need-' + nIdx"
-                >
+                <li v-for="(need, nIdx) in needsList" :key="'need-' + nIdx">
                   {{ need }}
                 </li>
               </ul>
 
               <h4>Recommend</h4>
               <ul>
-                <li
-                  v-for="(rec, rIdx) in recommendList"
-                  :key="'rec-' + rIdx"
-                >
+                <li v-for="(rec, rIdx) in recommendList" :key="'rec-' + rIdx">
                   {{ rec }}
                 </li>
               </ul>
@@ -137,98 +119,96 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { fetchLaptopRecommendations } from '@/services/gmsService'
-import AuthService from '@/services/AuthService'
-import LoginModal from '@/components/LoginModal.vue'
-import RegisterModal from '@/components/RegisterModal.vue'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
+import { fetchComputerRecommendations } from "@/services/gmsService";
+import AuthService from "@/services/AuthService";
+import LoginModal from "@/components/LoginModal.vue";
+import RegisterModal from "@/components/RegisterModal.vue";
 
-const CART_STORAGE_KEY = 'mrpcpicker_cart'
+const CART_STORAGE_KEY = "mrpcpicker_cart";
 
 export default {
-  name: 'RecommendView',
+  name: "RecommendView",
   components: {
     LoginModal,
     RegisterModal,
   },
   setup() {
-    const route = useRoute()
+    const route = useRoute();
 
-    // 🔹 목업 이미지 3개
     const mockImages = [
-      'https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg',
-      'https://www.nvidia.com/content/nvidiaGDC/gb/en_GB/geforce/laptops/_jcr_content/root/responsivegrid/nv_container/nv_container_454467679/nv_teaser_copy.coreimg.100.1070.jpeg/1737972531775/geforce-rtx-30-series-laptops-ari.jpeg',
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4kjRPi9UekiErQNI9YLi_R21z5-iFYaey4w&s',
-    ]
+      "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg",
+      "https://www.nvidia.com/content/nvidiaGDC/gb/en_GB/geforce/laptops/_jcr_content/root/responsivegrid/nv_container/nv_container_454467679/nv_teaser_copy.coreimg.100.1070.jpeg/1737972531775/geforce-rtx-30-series-laptops-ari.jpeg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4kjRPi9UekiErQNI9YLi_R21z5-iFYaey4w&s",
+    ];
 
     const getThumbSrc = (item, index) => {
-      if (item && item.imageUrl) return item.imageUrl
-      // index 0,1,2 → 위 3개 순환 사용
-      return mockImages[index % mockImages.length]
-    }
+      if (item && item.imageUrl) return item.imageUrl;
+      return mockImages[index % mockImages.length];
+    };
 
-    const query = ref(route.query.q || '')
-    const editableQuery = ref(query.value)
+    const query = ref(route.query.q || "");
+    const editableQuery = ref(query.value);
 
-    const loading = ref(false)
-    const error = ref(null)
+    const loading = ref(false);
+    const error = ref(null);
 
-    const results = ref([])
-    const needs = ref([])
-    const summary = ref('')
-    const recommends = ref([])
+    const results = ref([]);
+    const needs = ref([]);
+    const summary = ref("");
+    const recommends = ref([]);
 
-    const isAuthenticated = ref(!!AuthService.getCurrentUser())
+    const isAuthenticated = ref(!!AuthService.getCurrentUser());
 
-    const cart = ref([])
-    const selectedIds = ref([])
+    const cart = ref([]);
+    const selectedIds = ref([]);
 
-    const showLoginModal = ref(false)
-    const showRegisterModal = ref(false)
+    const showLoginModal = ref(false);
+    const showRegisterModal = ref(false);
 
     const updateAuthState = () => {
-      isAuthenticated.value = !!AuthService.getCurrentUser()
-    }
+      isAuthenticated.value = !!AuthService.getCurrentUser();
+    };
 
     const loadCartFromStorage = () => {
       try {
-        const raw = localStorage.getItem(CART_STORAGE_KEY)
-        if (!raw) return
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) cart.value = parsed
+        const raw = localStorage.getItem(CART_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) cart.value = parsed;
       } catch (e) {
-        console.warn('[CART] Failed to parse cart from storage:', e)
+        console.warn("[CART] Failed to parse cart from storage:", e);
       }
-    }
+    };
 
     const saveCartToStorage = () => {
       try {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.value))
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.value));
       } catch (e) {
-        console.warn('[CART] Failed to save cart to storage:', e)
+        console.warn("[CART] Failed to save cart to storage:", e);
       }
-    }
+    };
 
     const isSelected = (id) => {
-      if (!id) return false
-      return selectedIds.value.includes(id)
-    }
+      if (!id) return false;
+      return selectedIds.value.includes(id);
+    };
 
     const isInCart = (id) => {
-      if (!id) return false
-      return cart.value.some((item) => item.id === id)
-    }
+      if (!id) return false;
+      return cart.value.some((item) => item.id === id);
+    };
 
     const toggleSelectionAndCart = (item) => {
-      if (!item || !item.id) return
-      const id = item.id
+      if (!item || !item.id) return;
+      const id = item.id;
 
       if (isSelected(id)) {
-        selectedIds.value = selectedIds.value.filter((x) => x !== id)
-        cart.value = cart.value.filter((c) => c.id !== id)
+        selectedIds.value = selectedIds.value.filter((x) => x !== id);
+        cart.value = cart.value.filter((c) => c.id !== id);
       } else {
-        selectedIds.value.push(id)
+        selectedIds.value.push(id);
         if (!isInCart(id)) {
           cart.value.push({
             id: item.id,
@@ -236,131 +216,127 @@ export default {
             price: item.price,
             imageUrl: item.imageUrl,
             specs: item.specs || [],
-          })
+          });
         }
       }
 
-      saveCartToStorage()
-    }
+      saveCartToStorage();
+    };
 
     const handlePlusClick = (item, index) => {
       if (!isAuthenticated.value) {
-        showRegisterModal.value = false
-        showLoginModal.value = true
-        return
+        showRegisterModal.value = false;
+        showLoginModal.value = true;
+        return;
       }
-      
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
-      
-      // Always add to cart on first click
+
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const existingItemIndex = cart.findIndex((cartItem) => cartItem.id === item.id);
+
       if (existingItemIndex === -1) {
         const cartItem = {
           id: item.id,
           name: item.title,
           price: item.price,
           quantity: 1,
-          image: getThumbSrc(item, index) // Use the same image as shown in the list
+          image: getThumbSrc(item, index),
         };
         cart.push(cartItem);
         selectedIds.value.push(item.id);
-        
-        // Save to localStorage
-        localStorage.setItem('cart', JSON.stringify(cart));
-        // Notify other components about cart update
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('cart-updated'));
-        
-        // Show success message or feedback
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("cart-updated"));
+
         alert(`${item.title}이(가) 장바구니에 추가되었습니다.`);
       }
-    }
+    };
 
     const closeLoginModal = () => {
-      showLoginModal.value = false
-    }
+      showLoginModal.value = false;
+    };
 
     const closeRegisterModal = () => {
-      showRegisterModal.value = false
-    }
+      showRegisterModal.value = false;
+    };
 
     const openRegisterFromLogin = () => {
-      showLoginModal.value = false
-      showRegisterModal.value = true
-    }
+      showLoginModal.value = false;
+      showRegisterModal.value = true;
+    };
 
     const openLoginFromRegister = () => {
-      showRegisterModal.value = false
-      showLoginModal.value = true
-    }
+      showRegisterModal.value = false;
+      showLoginModal.value = true;
+    };
 
     const handleLoggedIn = () => {
-      updateAuthState()
-      showLoginModal.value = false
-    }
+      updateAuthState();
+      showLoginModal.value = false;
+    };
 
     const handleRegistered = () => {
-      updateAuthState()
-      showRegisterModal.value = false
-    }
+      updateAuthState();
+      showRegisterModal.value = false;
+    };
 
-    const topThree = computed(() => results.value.slice(0, 3))
-    const needsList = computed(() => needs.value || [])
-    const recommendList = computed(() => recommends.value || [])
+    const topThree = computed(() => results.value.slice(0, 3));
+    const needsList = computed(() => needs.value || []);
+    const recommendList = computed(() => recommends.value || []);
 
     const loadRecommendations = async () => {
-      if (!query.value) return
+      if (!query.value) return;
 
-      loading.value = true
-      error.value = null
+      loading.value = true;
+      error.value = null;
 
       try {
-        const data = await fetchLaptopRecommendations(query.value)
-        if (!data) return
+        const data = await fetchComputerRecommendations(query.value);
+        if (!data) return;
 
-        results.value = data.results || []
-        needs.value = data.needs || []
-        summary.value = data.summary || ''
-        recommends.value = data.recommends || []
-        selectedIds.value = []
+        results.value = data.results || [];
+        needs.value = data.needs || [];
+        summary.value = data.summary || "";
+        recommends.value = data.recommends || [];
+        selectedIds.value = [];
       } catch (err) {
-        console.error('추천 호출 실패:', err)
-        error.value = err
+        console.error("추천 호출 실패:", err);
+        error.value = err;
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    }
+    };
 
     const rewriteSearch = async () => {
-      const nextQuery = (editableQuery.value || '').trim()
-      if (!nextQuery || loading.value) return
+      const nextQuery = (editableQuery.value || "").trim();
+      if (!nextQuery || loading.value) return;
 
-      query.value = nextQuery
-      await loadRecommendations()
-    }
+      query.value = nextQuery;
+      await loadRecommendations();
+    };
 
     const formatPrice = (price) => {
-      if (price === null || price === undefined || price === '') {
-        return '가격 정보 없음'
+      if (price === null || price === undefined || price === "") {
+        return "가격 정보 없음";
       }
-      const num = Number(price)
-      if (Number.isNaN(num)) return price
-      return new Intl.NumberFormat('ko-KR', {
-        style: 'currency',
-        currency: 'KRW',
+      const num = Number(price);
+      if (Number.isNaN(num)) return price;
+      return new Intl.NumberFormat("ko-KR", {
+        style: "currency",
+        currency: "KRW",
         maximumFractionDigits: 0,
-      }).format(num)
-    }
+      }).format(num);
+    };
 
     onMounted(() => {
-      window.addEventListener('auth-changed', updateAuthState)
-      loadCartFromStorage()
-      loadRecommendations()
-    })
+      window.addEventListener("auth-changed", updateAuthState);
+      loadCartFromStorage();
+      loadRecommendations();
+    });
 
     onUnmounted(() => {
-      window.removeEventListener('auth-changed', updateAuthState)
-    })
+      window.removeEventListener("auth-changed", updateAuthState);
+    });
 
     return {
       query,
@@ -386,9 +362,9 @@ export default {
       handleLoggedIn,
       handleRegistered,
       getThumbSrc,
-    }
+    };
   },
-}
+};
 </script>
 
 <style scoped>
@@ -446,14 +422,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* 🔹 넘치는 부분 잘라내기 */
+  overflow: hidden;
 }
 
-/* 🔹 이미지가 컨테이너를 여백 없이 가득 채우도록 */
 .product-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* 비율 유지하며 꽉 채우고, 남는 부분 crop */
+  object-fit: cover;
 }
 
 .price-tag {
