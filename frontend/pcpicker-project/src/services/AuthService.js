@@ -11,6 +11,62 @@ const api = axios.create({
   },
 });
 
+// 요청 인터셉터 - 토큰 자동 주입
+api.interceptors.request.use(
+  (config) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user?.access) {
+      config.headers.Authorization = `Bearer ${user.access}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 응답 인터셉터 - 토큰 만료 시 자동 갱신
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // 401 에러이고, 이미 재시도한 요청이 아닌 경우
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user?.refresh) {
+          // 토큰 갱신 시도
+          const response = await axios.post(`${API_URL}token/refresh/`, {
+            refresh: user.refresh
+          });
+          
+          const { access } = response.data;
+          
+          // 새 토큰 저장
+          const updatedUser = { ...user, access };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          
+          // 원래 요청 재시도
+          originalRequest.headers.Authorization = `Bearer ${access}`;
+          return axios(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('토큰 갱신 실패:', refreshError);
+        // 토큰 갱신 실패 시 로그아웃 처리
+        localStorage.removeItem('user');
+        delete axios.defaults.headers.common['Authorization'];
+        window.dispatchEvent(new Event('auth-changed'));
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 class AuthService {
   // 🔐 Login
   login(username, password) {
@@ -161,21 +217,68 @@ class AuthService {
     }
   }
 
+  // 토큰 갱신
+  async refreshToken() {
+    try {
+      const user = this.getCurrentUser();
+      if (!user?.refresh) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await axios.post(`${API_URL}token/refresh/`, {
+        refresh: user.refresh
+      });
+
+      if (response.data.access) {
+        // 새 액세스 토큰으로 사용자 정보 업데이트
+        const updatedUser = { ...user, access: response.data.access };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // axios 기본 헤더 업데이트
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        
+        // 인증 상태 변경 이벤트 발생
+        window.dispatchEvent(new Event('auth-changed'));
+        
+        return response.data.access;
+      }
+    } catch (error) {
+      console.error('토큰 갱신 실패:', error);
+      this.logout();
+      throw error;
+    }
+  }
+
   // Authorization 헤더 생성
   getAuthHeader() {
-    const raw = localStorage.getItem('user');
-    const user = raw ? JSON.parse(raw) : null;
-    if (user && user.access) {
-      return { Authorization: 'Bearer ' + user.access };
+    const user = this.getCurrentUser();
+    if (user?.access) {
+      return { 
+        'Authorization': `Bearer ${user.access}`,
+        'Content-Type': 'application/json'
+      };
     }
     return {};
   }
 
   // 프로필 조회
-  getProfile() {
-    return api.get('user/', {
-      headers: this.getAuthHeader(),
-    });
+  async getProfile() {
+    try {
+      const response = await api.get('user/');
+      return response;
+    } catch (error) {
+      if (error.response?.status === 401) {
+        try {
+          await this.refreshToken();
+          const retryResponse = await api.get('user/');
+          return retryResponse;
+        } catch (refreshError) {
+          this.logout();
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+      }
+      throw error;
+    }
   }
 }
 

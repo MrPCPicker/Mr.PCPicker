@@ -10,6 +10,7 @@ class Article(models.Model):
         ('tip', '개발팁'),
         ('qna', 'Q&A'),
         ('free', '자유게시판'),
+        ('estimate', '견적 요청'),
     ]
     
     title = models.CharField('제목', max_length=100)
@@ -20,6 +21,16 @@ class Article(models.Model):
         related_name='articles'
     )
     category = models.CharField('카테고리', max_length=10, choices=CATEGORY_CHOICES, default='free')
+    
+    def save(self, *args, **kwargs):
+        # Convert category to lowercase before saving
+        if self.category:
+            self.category = self.category.lower()
+        super().save(*args, **kwargs)
+    
+    # 노트북 ID 리스트 저장을 위한 필드
+    laptops = models.JSONField('선택된 노트북 ID들', default=list, blank=True)
+    
     views = models.PositiveIntegerField('조회수', default=0)
     likes = models.ManyToManyField(User, related_name='liked_articles', blank=True)
     created_at = models.DateTimeField('작성일', auto_now_add=True)
@@ -35,6 +46,7 @@ class Article(models.Model):
         self.views += 1
         self.save(update_fields=['views'])
 
+# 이 부분이 누락되어 에러가 났었습니다. 다시 추가합니다.
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')

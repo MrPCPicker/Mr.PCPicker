@@ -19,7 +19,8 @@
         <template v-if="isAuthenticated">
           <span class="welcome-text">Welcome back, {{ userName }}님 👋</span>
           <router-link to="/cart" class="cart-icon">
-            🛒
+            🧺
+            <!-- 🛒 -->
           </router-link>
           <router-link to="/profile" class="nav-signup">My Page</router-link>
           <button class="nav-logout-btn" @click="handleLogout">
