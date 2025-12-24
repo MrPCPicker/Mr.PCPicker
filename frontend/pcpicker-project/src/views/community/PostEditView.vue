@@ -6,31 +6,68 @@
     
     <form @submit.prevent="updatePost" class="edit-form">
       <div class="form-group">
-        <input 
-          v-model="post.title" 
-          type="text" 
-          class="title-input"
-          placeholder="제목을 입력하세요" 
-          required
-        >
+        <label for="category">카테고리</label>
+        <div class="select-wrapper">
+          <select id="category" v-model="post.category" disabled>
+            <option value="notice">공지</option>
+            <option value="qna">Q&A</option>
+            <option value="estimate">견적 요청</option>
+            <option value="free">자유게시판</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="post.category === 'estimate'" class="form-group">
+        <label>선택된 노트북</label>
+        <div v-if="post.laptops && post.laptops.length > 0" class="selected-laptops">
+          <div v-for="(laptop, index) in post.laptops" :key="index" class="laptop-tag">
+            {{ laptop.name || laptop.model_name }} ({{ formatPrice(laptop.price) }}원)
+          </div>
+        </div>
+        <div v-else class="empty-message">
+          <i class="fas fa-exclamation-circle"></i> 
+          선택된 노트북 정보가 없습니다.
+        </div>
       </div>
       
-      <div class="form-group content-group">
-        <textarea 
-          v-model="post.content" 
-          class="content-input"
-          placeholder="내용을 입력하세요" 
+      <div v-if="post.category === 'estimate'" class="form-group estimate-note">
+        <div class="info-box">
+          <i class="fas fa-lightbulb"></i>
+          <div>
+            <strong>견적에 대한 질문을 작성해주세요😁</strong>
+            <ul>
+              <li>이 정도면 가격이 괜찮은 편인가요?</li>
+              <li>이 사양으로 영상 편집이 가능할까요?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="title">제목</label>
+        <input
+          id="title"
+          v-model="post.title"
+          type="text"
+          placeholder="제목을 입력하세요"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="content">내용 <span class="required" v-if="post.category === 'estimate'">*</span></label>
+        <textarea
+          id="content"
+          v-model="post.content"
+          :placeholder="post.category === 'estimate' ? '구체적인 질문을 작성해주세요.' : '내용을 작성해 주세요.'"
+          rows="12"
           required
         ></textarea>
       </div>
 
       <div class="form-actions">
-        <button type="button" @click="$router.back()" class="btn-cancel">
-          취소
-        </button>
-        <button type="submit" class="btn-submit">
-          수정 완료
-        </button>
+        <button type="button" class="btn-cancel" @click="$router.back()">취소</button>
+        <button type="submit" class="btn-submit">수정 완료</button>
       </div>
     </form>
   </div>
@@ -49,10 +86,17 @@ const postId = route.params.id;
 
 const post = ref({
   title: '',
-  content: ''
+  content: '',
+  category: '',
+  laptops: []
 });
 
-// 기존 게시글 정보 가져오기
+const formatPrice = (price) => {
+  if (!price) return '0';
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// 핵심: 작성자 권한 체크 및 데이터 로드
 const fetchPost = async () => {
   try {
     const token = authStore.user?.access;
@@ -63,67 +107,68 @@ const fetchPost = async () => {
     }
 
     const response = await axios.get(`http://localhost:8000/articles/${postId}/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     
-    // Check if the current user is the author
-    if (response.data.author !== authStore.user?.user_id) {
-      alert('수정 권한이 없습니다.');
-      router.back();
-      return;
+    const data = response.data;
+
+    // 1. 서버 응답에서 작성자 ID 추출 (객체/숫자 모두 대응)
+    const authorId = typeof data.author === 'object' 
+      ? (data.author.id || data.author.pk) 
+      : data.author;
+
+    // 2. 스토어에서 현재 로그인한 유저 ID 추출
+    const currentUserId = authStore.user?.user_id || authStore.user?.id || authStore.user?.pk;
+
+    // 3. 권한 검사 (둘 다 존재할 때만 비교)
+    if (authorId && currentUserId) {
+      if (String(authorId) !== String(currentUserId)) {
+        alert('본인이 작성한 글만 수정할 수 있습니다.');
+        router.back();
+        return;
+      }
     }
-    
-    post.value.title = response.data.title;
-    post.value.content = response.data.content;
+
+    // 4. 데이터 할당
+    post.value = {
+      title: data.title,
+      content: data.content,
+      category: data.category,
+      laptops: data.laptops || []
+    };
   } catch (error) {
-    console.error('Error fetching post:', error);
-    if (error.response?.status === 401) {
-      authStore.clearUser();
-      alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-      router.push('/login');
-    } else {
-      alert('게시글을 불러올 수 없습니다.');
-      router.back();
-    }
+    console.error('Fetch Error:', error);
+    alert('게시글을 불러오는 중 오류가 발생했습니다.');
+    router.back();
   }
 };
 
-// 수정 요청 보내기
 const updatePost = async () => {
   const token = authStore.user?.access;
-  if (!token) {
-    alert('로그인이 필요합니다.');
-    router.push('/login');
-    return;
-  }
-
   try {
-    await axios.put(
-      `http://localhost:8000/articles/${postId}/`,
-      post.value,
-      { 
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        } 
+    // 팁: 수정 시에는 필요한 데이터만 전송 (laptops는 보통 PK 리스트만 보냄)
+    // 서버 API 사양에 따라 노트북 객체 전체를 보낼지, ID만 보낼지 결정해야 함
+    const payload = {
+      title: post.value.title,
+      content: post.value.content,
+      category: post.value.category,
+      // 노트북 수정이 불가능한 구조라면 제외하거나 기존 데이터 전송
+      laptops: post.value.laptops.map(l => l.id || l.pk || l) 
+    };
+
+    await axios.put(`http://localhost:8000/articles/${postId}/`, payload, {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    );
-    alert('수정되었습니다.');
-    router.push(`/community/${postId}`); // 수정 후 상세페이지로 이동
+    });
+    
+    alert('성공적으로 수정되었습니다.');
+    router.push(`/community/${postId}`);
   } catch (error) {
-    console.error('Error updating post:', error);
-    if (error.response?.status === 401) {
-      authStore.clearUser();
-      alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-      router.push('/login');
-    } else if (error.response?.status === 403) {
-      alert('수정 권한이 없습니다.');
-      router.back();
-    } else {
-      alert('게시글 수정 중 오류가 발생했습니다.');
-    }
+    console.error('Update Error:', error);
+    const msg = error.response?.data?.detail || '수정 중 오류가 발생했습니다.';
+    alert(msg);
   }
 };
 
@@ -131,142 +176,12 @@ onMounted(fetchPost);
 </script>
 
 <style scoped>
-.post-edit {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.edit-header {
-  padding-bottom: 1.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.edit-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.edit-form {
-  padding: 0 0.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.title-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1.25rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  transition: border-color 0.2s;
-}
-
-.title-input:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-}
-
-.content-group {
-  min-height: 300px;
-}
-
-.content-input {
-  width: 100%;
-  min-height: 300px;
-  padding: 1rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  resize: vertical;
-  transition: border-color 0.2s;
-}
-
-.content-input:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-  margin-top: 2rem;
-}
-
-.btn-submit,
-.btn-cancel {
-  padding: 0.6rem 1.25rem;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-}
-
-.btn-submit {
-  background-color: #1976d2;
-  color: white;
-}
-
-.btn-submit:hover {
-  background-color: #1565c0;
-}
-
-.btn-cancel {
-  background-color: #f5f5f5;
-  color: #666;
-}
-
-.btn-cancel:hover {
-  background-color: #e0e0e0;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .post-edit {
-    margin: 0;
-    border-radius: 0;
-    padding: 1rem;
-  }
-  
-  .edit-header h1 {
-    font-size: 1.25rem;
-  }
-  
-  .title-input {
-    font-size: 1.1rem;
-  }
-  
-  .form-actions {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 1rem;
-    margin: 0;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 100;
-  }
-  
-  .content-group {
-    padding-bottom: 80px; /* 버튼 공간 확보 */
-  }
-}
+/* 기존 스타일과 동일하되 가독성을 위해 일부 유지 */
+.post-edit { max-width: 800px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.form-group { margin-bottom: 1.5rem; }
+label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+input, textarea, select { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; }
+.laptop-tag { background: #e3f2fd; color: #1976d2; padding: 0.5rem; border-radius: 4px; margin-right: 0.5rem; display: inline-block; }
+.btn-submit { background: #1976d2; color: white; border: none; padding: 0.75rem 1.5rem; cursor: pointer; border-radius: 4px; }
+.btn-cancel { background: #eee; border: none; padding: 0.75rem 1.5rem; margin-right: 1rem; cursor: pointer; border-radius: 4px; }
 </style>

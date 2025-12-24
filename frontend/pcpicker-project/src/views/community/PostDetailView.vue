@@ -248,7 +248,13 @@ const deletePost = async () => {
     router.push('/community');
   } catch (error) {}
 };
-const editPost = () => router.push(`/community/edit/${postId}`);
+const editPost = () => {
+  if (!isPostAuthor.value) {
+    alert('수정 권한이 없습니다.');
+    return;
+  }
+  router.push(`/community/edit/${postId}`);
+};
 const formatDate = (date) => date ? format(new Date(date), 'yyyy.MM.dd HH:mm', { locale: ko }) : '';
 const formatPrice = (price) => price ? price.toLocaleString() + '원' : '가격 정보 없음';
 
