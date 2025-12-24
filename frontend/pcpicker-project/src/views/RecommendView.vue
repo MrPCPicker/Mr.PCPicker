@@ -26,7 +26,18 @@
               </div>
 
               <div class="product-body">
-                <h3 class="product-title">{{ item.title }}</h3>
+                <h3 class="product-title">
+                  <a
+                    v-if="item.shoppingUrl"
+                    class="product-link"
+                    :href="item.shoppingUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ item.title }}
+                  </a>
+                  <span v-else>{{ item.title }}</span>
+                </h3>
                 <ul class="product-specs">
                   <li v-for="(spec, sIdx) in (item.specs || [])" :key="sIdx">
                     {{ spec }}
@@ -522,6 +533,15 @@ export default {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 8px;
+}
+
+.product-link {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.product-link:hover {
+  opacity: 0.9;
 }
 
 .product-specs {

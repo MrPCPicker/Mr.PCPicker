@@ -17,9 +17,10 @@ class Command(BaseCommand):
             # 원본 데이터를 파싱하여 제품 세부 정보 추출
             spec_data = extract_spec(raw.raw_json)
 
-            # 'model' 필드가 없으면 기본값 'Unknown' 설정
-            if 'model' not in spec_data or not spec_data['model']:
-                spec_data['model'] = 'Unknown'
+            # 'model' 필드가 'Unknown'이면 데이터를 저장하지 않음
+            if spec_data.get("model") == "Unknown":
+                self.stdout.write(f"Skipping product {raw.product_id} due to unknown model")
+                continue  # 'Unknown'인 경우 해당 제품은 건너뜀
 
             # ProductDetailSpec 모델에 데이터 저장 (또는 업데이트)
             ProductDetailSpec.objects.update_or_create(

@@ -1,29 +1,34 @@
-# 2️⃣ 파서 코드 (raw → spec 변환)
-# products/services/detail_parser.py
 import re
+import json
 
-def _get(d, path):
-    cur = d
-    for p in path.split("."):
-        if not isinstance(cur, dict):
-            return None
-        cur = cur.get(p)
-    return cur
-
+def _get(d, path, default=None):
+    """Safely get nested dictionary value using dot notation"""
+    if not d or not path:
+        return default
+        
+    keys = path.split('.')
+    current = d
+    
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return default
+    return current
 
 def parse_int(text):
+    """Extract first integer from text"""
     if not text:
         return None
-    m = re.search(r"(\d+)", str(text))
+    m = re.search(r'(\d+)', str(text))
     return int(m.group(1)) if m else None
 
-
 def parse_float(text):
+    """Extract first float from text"""
     if not text:
         return None
-    m = re.search(r"(\d+(\.\d+)?)", str(text))
+    m = re.search(r'(\d+(?:\.\d+)?)', str(text))
     return float(m.group(1)) if m else None
-
 
 def extract_spec(raw):
     """
@@ -34,7 +39,7 @@ def extract_spec(raw):
     # Product
     product = data.get("Product", {})
     brand = product.get("Brand", "")
-    model = product.get("Model", "")
+    model = product.get("Model", "") or product.get("Model Name", "")  # "Model" 또는 "Model Name"을 확인
     category = product.get("Category", "").lower()
 
     product_type = "unknown"
@@ -78,7 +83,7 @@ def extract_spec(raw):
     return {
         "product_type": product_type,
         "brand": brand,
-        "model": model,
+        "model": model if model else "Unknown",  # 'model'이 없으면 'Unknown'으로 설정
         "os": os or "",
         "cpu": cpu or "",
         "gpu": gpu or "",
