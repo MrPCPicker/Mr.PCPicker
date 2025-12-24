@@ -1,5 +1,5 @@
-# 3️⃣ Management Command (Detail → Raw → Spec)
 # products/management/commands/import_product_detail.py
+
 from django.core.management.base import BaseCommand
 from products.models import ProductDetailRaw, ProductDetailSpec
 from products.services.detail_parser import extract_spec

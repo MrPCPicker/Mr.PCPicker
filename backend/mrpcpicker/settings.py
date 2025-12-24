@@ -11,9 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+
 # gms연동을 위한 추가 코드
 from dotenv import load_dotenv
 load_dotenv()
+
+# API_KEY와 API_ID를 환경 변수에서 읽어옴
+import os
+API_KEY = os.getenv("API_KEY")
+API_ID = os.getenv("API_ID")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

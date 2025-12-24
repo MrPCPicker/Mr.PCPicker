@@ -9,6 +9,7 @@ urlpatterns = [
     path('articles/', include('articles.urls')),
     path('products/', include('products.urls')),
     path("gms/", include("gms.urls")),
+    path('api/', include('products.urls')),  # 'products' 앱에 있는 urls.py를 포함
 ]
 
 if settings.DEBUG:

@@ -40,25 +40,6 @@ class ProductSearch(models.Model):
     def __str__(self):
         return f"[{self.brand}] {self.model}"
 
-
-class ProductSearch(models.Model):
-    """
-    TechSpecs Product Search API (고정 필드)
-    """
-    product_id = models.CharField(max_length=64, unique=True)
-    brand = models.CharField(max_length=128)
-    category = models.CharField(max_length=128)
-    model = models.CharField(max_length=256)
-    version = models.CharField(max_length=128, blank=True)
-    thumbnail = models.URLField(blank=True)
-    release_date = models.CharField(max_length=32, blank=True)
-    image = models.CharField(max_length=256, blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"[{self.brand}] {self.model}"
-
 class ProductDetailRaw(models.Model):
     """
     TechSpecs Product Detail API 원본 저장
