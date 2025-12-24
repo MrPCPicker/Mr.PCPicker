@@ -4,5 +4,5 @@ from . import views
 
 urlpatterns = [
     path("gms-test/", views.gms_test, name="gms-test"),
-    path("recommend-laptops/", views.recommend_laptops, name="gms-recommend-laptops"),
+    path("recommend-computers/", views.recommend_computers, name="gms-recommend-computers"),  # 경로 변경
 ]

@@ -40,6 +40,7 @@ def call_gms_openai(prompt: str) -> str:
     # ---- Responses API 표준 경로에서 텍스트 추출 ----
     # 보통:
     # result["output"][0]["content"][0] == {"type": "output_text", "text": "..."}
+
     outputs = result.get("output", []) or []
     if not outputs:
         raise ValueError("No 'output' field in GMS response")

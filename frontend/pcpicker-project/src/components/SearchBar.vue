@@ -87,7 +87,7 @@ export default {
       // ✅ 여기서만 추천 페이지로 이동
       this.$router.push({
         name: 'Recommend',
-        query: { q: query }
+        query: { q: query, ts: Date.now() }
       })
     }
   }
