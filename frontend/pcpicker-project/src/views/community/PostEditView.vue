@@ -39,10 +39,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const postId = route.params.id;
 
 const post = ref({
@@ -53,30 +55,75 @@ const post = ref({
 // 기존 게시글 정보 가져오기
 const fetchPost = async () => {
   try {
-    const response = await axios.get(`http://localhost:8000/articles/${postId}/`);
+    const token = authStore.user?.access;
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+      return;
+    }
+
+    const response = await axios.get(`http://localhost:8000/articles/${postId}/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    // Check if the current user is the author
+    if (response.data.author !== authStore.user?.user_id) {
+      alert('수정 권한이 없습니다.');
+      router.back();
+      return;
+    }
+    
     post.value.title = response.data.title;
     post.value.content = response.data.content;
   } catch (error) {
-    alert('게시글을 불러올 수 없습니다.');
-    router.back();
+    console.error('Error fetching post:', error);
+    if (error.response?.status === 401) {
+      authStore.clearUser();
+      alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+      router.push('/login');
+    } else {
+      alert('게시글을 불러올 수 없습니다.');
+      router.back();
+    }
   }
 };
 
 // 수정 요청 보내기
 const updatePost = async () => {
-  const userData = localStorage.getItem('user');
-  const token = userData ? JSON.parse(userData).access : null;
+  const token = authStore.user?.access;
+  if (!token) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
 
   try {
     await axios.put(
       `http://localhost:8000/articles/${postId}/`,
       post.value,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { 
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } 
+      }
     );
     alert('수정되었습니다.');
     router.push(`/community/${postId}`); // 수정 후 상세페이지로 이동
   } catch (error) {
-    alert('수정 권한이 없거나 오류가 발생했습니다.');
+    console.error('Error updating post:', error);
+    if (error.response?.status === 401) {
+      authStore.clearUser();
+      alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+      router.push('/login');
+    } else if (error.response?.status === 403) {
+      alert('수정 권한이 없습니다.');
+      router.back();
+    } else {
+      alert('게시글 수정 중 오류가 발생했습니다.');
+    }
   }
 };
 

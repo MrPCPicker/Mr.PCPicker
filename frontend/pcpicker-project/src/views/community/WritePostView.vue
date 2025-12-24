@@ -19,23 +19,42 @@
       </div>
 
       <div v-if="category === 'ESTIMATE'" class="form-group">
-        <label for="laptop">노트북 선택 <span class="required">*</span></label>
-        <p class="help-text">찜 목록에 있는 노트북 중 하나를 선택해주세요.</p>
-        <div class="select-wrapper">
-          <select id="laptop" v-model="selectedLaptopId" required>
-            <option value="" disabled selected>-- 노트북을 선택해주세요 --</option>
-            <option 
-              v-for="laptop in wishlist" 
-              :key="laptop.id" 
-              :value="laptop.id"
-            >
-              {{ laptop.name }} ({{ formatPrice(laptop.price) }}원)
-            </option>
-          </select>
+        <label>노트북 선택 <span class="required">*</span></label>
+        <p class="help-text">찜 목록에 있는 노트북을 선택해주세요.(여러 개 선택 가능)</p>
+        
+        <!-- Selected laptops as tags -->
+        <div v-if="selectedLaptops.length > 0" class="selected-laptops">
+          <div v-for="laptop in selectedLaptops" :key="laptop.id" class="laptop-tag">
+            {{ laptop.name }} ({{ formatPrice(laptop.price) }}원)
+            <button type="button" @click.stop="removeLaptop(laptop.id)" class="remove-tag">
+              &times;
+            </button>
+          </div>
         </div>
-        <p v-if="wishlist.length === 0" class="error-text">
-          <i class="fas fa-exclamation-circle"></i> 찜 목록에 노트북이 없습니다. 먼저 상품을 찜해주세요.
-        </p>
+
+        <!-- Laptop selection dropdown -->
+        <div class="laptop-selection">
+          <div 
+            v-for="laptop in availableLaptops" 
+            :key="laptop.id" 
+            class="laptop-option"
+            @click="toggleLaptopSelection(laptop)"
+          >
+            <input 
+              type="checkbox" 
+              :id="'laptop-' + laptop.id"
+              :checked="isLaptopSelected(laptop.id)"
+              @change="toggleLaptopSelection(laptop)"
+            >
+            <label :for="'laptop-' + laptop.id">
+              {{ laptop.name }} ({{ formatPrice(laptop.price) }}원)
+            </label>
+          </div>
+          <p v-if="availableLaptops.length === 0" class="empty-message">
+            <i class="fas fa-exclamation-circle"></i> 
+            찜 목록에 노트북이 없습니다. 먼저 상품을 찜해주세요.
+          </p>
+        </div>
       </div>
       
       <div v-if="category === 'ESTIMATE'" class="form-group estimate-note">
@@ -88,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
@@ -96,8 +115,37 @@ const router = useRouter();
 const title = ref('');
 const content = ref('');
 const category = ref('FREE');
-const selectedLaptopId = ref('');
+const selectedLaptopIds = ref([]);
+const selectedLaptops = ref([]);
 const wishlist = ref([]);
+
+// Computed property for available laptops (not yet selected)
+const availableLaptops = computed(() => {
+  return wishlist.value.filter(laptop => !selectedLaptopIds.value.includes(laptop.id));
+});
+
+// Check if a laptop is selected
+const isLaptopSelected = (laptopId) => {
+  return selectedLaptopIds.value.includes(laptopId);
+};
+
+// Toggle laptop selection
+const toggleLaptopSelection = (laptop) => {
+  const index = selectedLaptopIds.value.indexOf(laptop.id);
+  if (index === -1) {
+    selectedLaptopIds.value.push(laptop.id);
+    selectedLaptops.value.push(laptop);
+  } else {
+    selectedLaptopIds.value.splice(index, 1);
+    selectedLaptops.value = selectedLaptops.value.filter(l => l.id !== laptop.id);
+  }
+};
+
+// Remove a selected laptop
+const removeLaptop = (laptopId) => {
+  selectedLaptopIds.value = selectedLaptopIds.value.filter(id => id !== laptopId);
+  selectedLaptops.value = selectedLaptops.value.filter(l => l.id !== laptopId);
+};
 
 // Load wishlist from localStorage
 onMounted(() => {
@@ -134,13 +182,16 @@ const submitPost = async () => {
 
     // For estimate posts, validate laptop selection
     if (category.value === 'ESTIMATE') {
-      if (!selectedLaptopId.value) {
-        alert('견적 문의를 위해 노트북을 선택해주세요.');
+      if (selectedLaptopIds.value.length === 0) {
+        alert('견적 문의를 위해 최소 한 개 이상의 노트북을 선택해주세요.');
         return;
       }
-      const selectedLaptop = wishlist.value.find(laptop => laptop.id === selectedLaptopId.value);
-      if (!selectedLaptop) {
-        alert('유효하지 않은 노트북이 선택되었습니다. 다시 선택해주세요.');
+      // Validate all selected laptops exist in the wishlist
+      const invalidSelections = selectedLaptopIds.value.filter(id => 
+        !wishlist.value.some(laptop => laptop.id === id)
+      );
+      if (invalidSelections.length > 0) {
+        alert('선택하신 노트북 중 유효하지 않은 항목이 있습니다. 다시 선택해주세요.');
         return;
       }
     }
@@ -149,9 +200,13 @@ const submitPost = async () => {
     const requestData = {
       title: title.value,
       content: content.value,
-      category: category.value.toLowerCase(),  // Convert to lowercase to match backend expectations
-      // Add laptop ID for estimate posts
-      ...(category.value === 'ESTIMATE' && { laptop: selectedLaptopId.value })
+      category: category.value.toLowerCase(),
+      // Add laptop IDs for estimate posts
+      ...(category.value === 'ESTIMATE' && { 
+        laptops: selectedLaptopIds.value,
+        // For backward compatibility, also include the first selected laptop ID
+        ...(selectedLaptopIds.value.length > 0 && { laptop: selectedLaptopIds.value[0] })
+      })
     };
 
     // Make the API request
@@ -202,6 +257,90 @@ const submitPost = async () => {
 </script>
 
 <style scoped>
+/* Laptop selection styles */
+.selected-laptops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  min-height: 40px;
+}
+
+.laptop-tag {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #1890ff;
+  height: 32px;
+}
+
+.remove-tag {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.laptop-selection {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.laptop-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+  border-radius: 2px;
+}
+
+.laptop-option:hover {
+  background-color: #f5f5f5;
+}
+
+.laptop-option input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.laptop-option label {
+  cursor: pointer;
+  width: 100%;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.empty-message {
+  padding: 12px;
+  color: #ff4d4f;
+  text-align: center;
+  font-size: 14px;
+  margin: 0;
+}
+
+.empty-message i {
+  margin-right: 8px;
+}
+
 .required {
   color: #ff4d4f;
   margin-left: 4px;
