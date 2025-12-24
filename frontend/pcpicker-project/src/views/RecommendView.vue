@@ -56,6 +56,7 @@
             <textarea
               v-model="editableQuery"
               class="summary-input"
+              @keydown.enter="handleQueryEnter"
               aria-label="Edit your requirements"
             ></textarea>
           </div>
@@ -119,14 +120,15 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { fetchComputerRecommendations } from "@/services/gmsService";
 import AuthService from "@/services/AuthService";
 import LoginModal from "@/components/LoginModal.vue";
 import RegisterModal from "@/components/RegisterModal.vue";
 
 const CART_STORAGE_KEY = "mrpcpicker_cart";
+const RECOMMEND_QUERY_STORAGE_KEY = "mrpcpicker_recommend_query";
 
 export default {
   name: "RecommendView",
@@ -136,6 +138,7 @@ export default {
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
 
     const mockImages = [
       "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg",
@@ -150,6 +153,26 @@ export default {
 
     const query = ref(route.query.q || "");
     const editableQuery = ref(query.value);
+
+    const loadSavedQuery = () => {
+      try {
+        const saved = (localStorage.getItem(RECOMMEND_QUERY_STORAGE_KEY) || "").trim();
+        if (!saved) return "";
+        return saved;
+      } catch (e) {
+        return "";
+      }
+    };
+
+    const saveQuery = (val) => {
+      try {
+        const v = (val || "").trim();
+        if (!v) return;
+        localStorage.setItem(RECOMMEND_QUERY_STORAGE_KEY, v);
+      } catch (e) {
+        // ignore
+      }
+    };
 
     const loading = ref(false);
     const error = ref(null);
@@ -287,6 +310,8 @@ export default {
     const loadRecommendations = async () => {
       if (!query.value) return;
 
+      saveQuery(query.value);
+
       loading.value = true;
       error.value = null;
 
@@ -312,7 +337,24 @@ export default {
       if (!nextQuery || loading.value) return;
 
       query.value = nextQuery;
+
+      saveQuery(nextQuery);
+      try {
+        await router.replace({
+          name: "Recommend",
+          query: { ...route.query, q: nextQuery },
+        });
+      } catch (e) {
+        // ignore
+      }
       await loadRecommendations();
+    };
+
+    const handleQueryEnter = async (e) => {
+      if (!e) return;
+      if (e.shiftKey) return;
+      e.preventDefault();
+      await rewriteSearch();
     };
 
     const formatPrice = (price) => {
@@ -330,6 +372,16 @@ export default {
 
     onMounted(() => {
       window.addEventListener("auth-changed", updateAuthState);
+
+      const saved = loadSavedQuery();
+      const routeQ = (route.query.q || "").toString().trim();
+      const initial = routeQ || saved;
+      if (initial) {
+        query.value = initial;
+        editableQuery.value = initial;
+        saveQuery(initial);
+      }
+
       loadCartFromStorage();
       loadRecommendations();
     });
@@ -337,6 +389,23 @@ export default {
     onUnmounted(() => {
       window.removeEventListener("auth-changed", updateAuthState);
     });
+
+    watch(editableQuery, (v) => {
+      saveQuery(v);
+    });
+
+    watch(
+      () => [route.query.q, route.query.ts],
+      async ([nextQ]) => {
+        const q = (nextQ || "").toString().trim();
+        if (!q) return;
+
+        query.value = q;
+        editableQuery.value = q;
+        saveQuery(q);
+        await loadRecommendations();
+      }
+    );
 
     return {
       query,
@@ -348,6 +417,7 @@ export default {
       needsList,
       recommendList,
       rewriteSearch,
+      handleQueryEnter,
       formatPrice,
       isAuthenticated,
       cart,
