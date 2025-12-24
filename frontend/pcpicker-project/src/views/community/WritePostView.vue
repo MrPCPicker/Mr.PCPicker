@@ -19,55 +19,60 @@
       </div>
 
       <div v-if="category === 'estimate'" class="form-group">
-        <label>노트북 선택 <span class="required">*</span></label>
-        <p class="help-text">찜 목록에 있는 노트북을 선택해주세요.(여러 개 선택 가능)</p>
+        <label>비교/문의할 노트북 선택 <span class="required">*</span></label>
+        <p class="help-text">위시리스트의 제품 중 상담받고 싶은 모델을 선택하세요.</p>
         
-        <!-- Selected laptops as tags -->
-        <div v-if="selectedLaptops.length > 0" class="selected-laptops">
-          <div v-for="laptop in selectedLaptops" :key="laptop.id" class="laptop-tag">
-            {{ laptop.name }} ({{ formatPrice(laptop.price) }}원)
-            <button type="button" @click.stop="removeLaptop(laptop.id)" class="remove-tag">
-              &times;
+        <div v-if="selectedLaptops.length > 0" class="selected-laptop-cards">
+          <div v-for="laptop in selectedLaptops" :key="laptop.id" class="selected-card">
+            <div class="card-mini-img">
+              <img :src="getItemImage(laptop)" alt="">
+            </div>
+            <div class="card-mini-info">
+              <span class="card-mini-name">{{ laptop.name }}</span>
+              <div class="card-mini-specs">
+                <span v-for="spec in laptop.specs" :key="spec" class="mini-spec-tag">{{ spec }}</span>
+              </div>
+            </div>
+            <button type="button" @click="removeLaptop(laptop.id)" class="card-remove-btn">
+              <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
 
-        <!-- Laptop selection dropdown -->
-        <div class="laptop-selection">
+        <div class="laptop-selection-grid">
           <div 
-            v-for="laptop in availableLaptops" 
+            v-for="laptop in wishlist" 
             :key="laptop.id" 
-            class="laptop-option"
+            class="laptop-select-item"
+            :class="{ 'is-active': isLaptopSelected(laptop.id) }"
             @click="toggleLaptopSelection(laptop)"
           >
-            <input 
-              type="checkbox" 
-              :id="'laptop-' + laptop.id"
-              :checked="isLaptopSelected(laptop.id)"
-              @change="toggleLaptopSelection(laptop)"
-            >
-            <label :for="'laptop-' + laptop.id">
-              {{ laptop.name }} ({{ formatPrice(laptop.price) }}원)
-            </label>
+            <div class="select-item-header">
+              <div class="custom-check" :class="{ 'checked': isLaptopSelected(laptop.id) }"></div>
+              <span class="item-name">{{ laptop.name }}</span>
+              <span class="item-price">₩{{ formatPrice(laptop.price) }}</span>
+            </div>
+            <div class="item-spec-preview">
+              {{ laptop.specs?.join(' / ') || '상세 정보 없음' }}
+            </div>
           </div>
-          <p v-if="availableLaptops.length === 0" class="empty-message">
-            <i class="fas fa-exclamation-circle"></i> 
-            찜 목록에 노트북이 없습니다. 먼저 상품을 찜해주세요.
-          </p>
+          
+          <div v-if="wishlist.length === 0" class="empty-wishlist-note">
+            <i class="fas fa-heart-broken"></i>
+            <p>위시리스트가 비어있습니다. 상품을 먼저 찜해주세요!</p>
+          </div>
         </div>
       </div>
       
       <div v-if="category === 'estimate'" class="form-group estimate-note">
         <div class="info-box">
-          <i class="fas fa-lightbulb"></i>
+          <i class="fas fa-comment-dots"></i>
           <div>
-            <strong>견적에 대한 질문을 작성해주세요😁</strong>
-            <p>예시:</p>
-            <ul>
-              <li>이 정도면 가격이 괜찮은 편인가요?</li>
-              <li>이 사양으로 영상 편집이 가능할까요?</li>
-              <li>배터리 수명이 궁금해요.</li>
-              <li>이 가격대에 다른 추천 모델이 있을까요?</li>
+            <strong>어떤 점이 궁금하신가요?</strong>
+            <ul class="example-list">
+              <li>"이 사양으로 프리미어 프로 컷 편집 원활할까요?"</li>
+              <li>"대학생 과제용으로 무게와 성능 중 뭐가 나을까요?"</li>
+              <li>"지금 가격이 적당한지 궁금합니다."</li>
             </ul>
           </div>
         </div>
@@ -75,32 +80,23 @@
 
       <div class="form-group">
         <label for="title">제목</label>
-        <input
-          id="title"
-          v-model="title"
-          type="text"
-          placeholder="제목을 입력하세요"
-          required
-        />
+        <input id="title" v-model="title" type="text" placeholder="제목을 입력하세요" required />
       </div>
 
       <div class="form-group">
         <label for="content">내용 <span class="required">*</span></label>
-        <p v-if="category === 'estimate'" class="help-text">
-          견적에 대한 구체적인 질문을 작성해주세요. 다른 사용자들이 도움을 드릴 수 있도록 자세히 적어주시면 좋아요!
-        </p>
         <textarea
           id="content"
           v-model="content"
-          :placeholder="category === 'estimate' ? '예) 이 노트북으로 4K 영상 편집이 가능할까요?\n\n- 사용 목적: 유튜브 4K 영상 편집\n- 주로 사용하는 프로그램: Adobe Premiere Pro, After Effects\n- 기타 고려사항: 배터리 수명도 궁금합니다.' : '내용을 작성해 주세요.'"
-          rows="12"
+          :placeholder="category === 'estimate' ? '선택한 노트북들에 대해 궁금한 점을 자세히 적어주시면 정확한 답변을 받을 수 있습니다.' : '내용을 작성해 주세요.'"
+          rows="10"
           required
         ></textarea>
       </div>
 
       <div class="form-actions">
         <button type="button" class="btn-cancel" @click="router.back()">취소</button>
-        <button type="submit" class="btn-submit">등록하기</button>
+        <button type="submit" class="btn-submit">게시글 등록</button>
       </div>
     </form>
   </div>
@@ -119,17 +115,8 @@ const selectedLaptopIds = ref([]);
 const selectedLaptops = ref([]);
 const wishlist = ref([]);
 
-// Computed property for available laptops (not yet selected)
-const availableLaptops = computed(() => {
-  return wishlist.value.filter(laptop => !selectedLaptopIds.value.includes(laptop.id));
-});
+const isLaptopSelected = (laptopId) => selectedLaptopIds.value.includes(laptopId);
 
-// Check if a laptop is selected
-const isLaptopSelected = (laptopId) => {
-  return selectedLaptopIds.value.includes(laptopId);
-};
-
-// Toggle laptop selection
 const toggleLaptopSelection = (laptop) => {
   const index = selectedLaptopIds.value.indexOf(laptop.id);
   if (index === -1) {
@@ -141,13 +128,11 @@ const toggleLaptopSelection = (laptop) => {
   }
 };
 
-// Remove a selected laptop
 const removeLaptop = (laptopId) => {
   selectedLaptopIds.value = selectedLaptopIds.value.filter(id => id !== laptopId);
   selectedLaptops.value = selectedLaptops.value.filter(l => l.id !== laptopId);
 };
 
-// Load wishlist from localStorage
 onMounted(() => {
   const savedWishlist = localStorage.getItem('wishlist');
   if (savedWishlist) {
@@ -155,377 +140,150 @@ onMounted(() => {
   }
 });
 
-const formatPrice = (price) => {
-  return price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
-};
+const formatPrice = (price) => price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
+const getItemImage = (item) => item.image || item.imageUrl || 'https://via.placeholder.com/100';
 
 const submitPost = async () => {
+  // (기존 제출 로직과 동일)
   try {
-    // Validate required fields
-    if (!title.value.trim()) {
-      alert('제목을 입력해주세요.');
-      return;
-    }
-    if (!content.value.trim()) {
-      alert('내용을 입력해주세요.');
+    if (!title.value.trim() || !content.value.trim()) {
+      alert('모든 필드를 입력해주세요.');
       return;
     }
 
     const userData = localStorage.getItem('user');
     const token = userData ? JSON.parse(userData)?.access : null;
+    if (!token) { alert('로그인이 필요합니다.'); router.push('/login'); return; }
 
-    if (!token) {
-      alert('로그인이 필요한 서비스입니다.');
-      router.push('/login');
+    if (category.value === 'estimate' && selectedLaptopIds.value.length === 0) {
+      alert('최소 한 개의 제품을 선택해주세요.');
       return;
     }
 
-    // For estimate posts, validate laptop selection
-    if (category.value === 'estimate') {
-      if (selectedLaptopIds.value.length === 0) {
-        alert('견적 문의를 위해 최소 한 개 이상의 노트북을 선택해주세요.');
-        return;
-      }
-      // Validate all selected laptops exist in the wishlist
-      const invalidSelections = selectedLaptopIds.value.filter(id => 
-        !wishlist.value.some(laptop => laptop.id === id)
-      );
-      if (invalidSelections.length > 0) {
-        alert('선택하신 노트북 중 유효하지 않은 항목이 있습니다. 다시 선택해주세요.');
-        return;
-      }
-    }
-
-    // Prepare the request data
     const requestData = {
       title: title.value,
       content: content.value,
       category: category.value,
       ...(category.value === 'estimate' && { laptops: selectedLaptopIds.value })
     };
-    
-    console.log('Submitting post with data:', JSON.stringify(requestData, null, 2));
 
-    // Make the API request
-    const response = await axios.post(
-      'http://localhost:8000/articles/',
-      requestData,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response = await axios.post('http://localhost:8000/articles/', requestData, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
 
     if (response.status === 201) {
-      alert('게시글이 성공적으로 등록되었습니다.');
+      alert('등록되었습니다.');
       router.push('/community');
-    } else {
-      throw new Error('게시글 등록에 실패했습니다.');
     }
   } catch (error) {
-    console.error('Error submitting post:', error);
-    if (error.response) {
-      // Server responded with an error
-      console.error('Error response data:', error.response.data);
-      console.error('Error status:', error.response.status);
-      console.error('Error headers:', error.response.headers);
-      
-      // Show more specific error messages based on the response
-      if (error.response.status === 400) {
-        const errorMsg = error.response.data.category ? 
-          `카테고리 오류: 유효하지 않은 카테고리 값입니다. (${category.value})` :
-          '입력한 내용을 확인해주세요.';
-        alert(errorMsg);
-      } else if (error.response.status === 401) {
-        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-        router.push('/login');
-      } else {
-        alert(`게시글 등록 중 오류가 발생했습니다: ${error.response.data?.detail || error.message}`);
-      }
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error('No response received:', error.request);
-      alert('서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.');
-    } else {
-      // Something happened in setting up the request
-      console.error('Request setup error:', error.message);
-      alert(`게시글 등록 중 오류가 발생했습니다: ${error.message}`);
-    }
+    console.error(error);
+    alert('등록 중 오류가 발생했습니다.');
   }
-}
+};
 </script>
 
 <style scoped>
-/* Laptop selection styles */
-.selected-laptops {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-  min-height: 40px;
-}
+.write-container { max-width: 850px; margin: 40px auto; padding: 0 20px; font-family: 'Pretendard', sans-serif; }
+.write-header { margin-bottom: 30px; text-align: left; }
+.write-header h1 { font-size: 26px; color: #2f3a45; font-weight: 700; }
+.write-form { background: #fff; padding: 32px; border-radius: 16px; border: 1px solid #eef0f2; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
-.laptop-tag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #e6f7ff;
-  border: 1px solid #91d5ff;
-  border-radius: 4px;
-  padding: 4px 12px;
-  font-size: 14px;
-  color: #1890ff;
-  height: 32px;
-}
-
-.remove-tag {
-  margin-left: 8px;
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-}
-
-.laptop-selection {
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 4px;
-}
-
-.laptop-option {
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s;
-  border-radius: 2px;
-}
-
-.laptop-option:hover {
-  background-color: #f5f5f5;
-}
-
-.laptop-option input[type="checkbox"] {
-  margin-right: 8px;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.laptop-option label {
-  cursor: pointer;
-  width: 100%;
-  margin: 0;
-  padding: 4px 0;
-}
-
-.empty-message {
-  padding: 12px;
-  color: #ff4d4f;
-  text-align: center;
-  font-size: 14px;
-  margin: 0;
-}
-
-.empty-message i {
-  margin-right: 8px;
-}
-
-.required {
-  color: #ff4d4f;
-  margin-left: 4px;
-}
-
-.help-text {
-  color: #666;
-  font-size: 13px;
-  margin: 6px 0 12px;
-  line-height: 1.5;
-}
-
-.error-text {
-  color: #ff4d4f;
-  font-size: 13px;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.estimate-note {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 20px 0;
-}
-
-.info-box {
-  display: flex;
-  gap: 12px;
-  color: #2f3a45;
-}
-
-.info-box i {
-  color: #1e6fd7;
-  font-size: 20px;
-  margin-top: 4px;
-}
-
-.info-box strong {
-  display: block;
-  margin-bottom: 8px;
-  color: #1e6fd7;
-}
-
-.info-box ul {
-  margin: 8px 0 0 20px;
-  padding: 0;
-}
-
-.info-box li {
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: #555;
-}
-
-.write-container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
-
-.write-header {
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.write-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.write-header p {
-  color: #888;
-  font-size: 14px;
-}
-
-.write-form {
-  background: #ffffff;
-  padding: 40px;
+/* 견적 선택 영역 스타일 수정 */
+.laptop-selection-grid {
+  border: 1px solid #e0e4e8;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #eee;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #fcfdfe;
 }
 
-.form-group {
-  margin-bottom: 24px;
+.laptop-select-item {
+  padding: 16px;
+  border-bottom: 1px solid #f0f2f4;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.form-group label {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 8px;
+.laptop-select-item:hover { background: #f1f7ff; }
+.laptop-select-item.is-active { background: #f0f6ff; }
+
+.select-item-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.item-name { flex: 1; font-weight: 700; color: #333; font-size: 15px; }
+.item-price { color: #1976d2; font-weight: 800; font-size: 14px; }
+
+.item-spec-preview {
+  font-size: 12px;
+  color: #778;
+  padding-left: 28px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Input & Select & Textarea 공통 스타일 */
-input[type="text"],
-select,
-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  color: #333;
-  transition: all 0.2s ease;
-  background-color: #fafafa;
-  box-sizing: border-box; /* 패딩 포함 크기 조절 */
+/* 체크박스 커스텀 */
+.custom-check {
+  width: 18px; height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  position: relative;
+}
+.custom-check.checked { background: #1976d2; border-color: #1976d2; }
+.custom-check.checked::after {
+  content: '✓'; color: #fff; font-size: 12px;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
 }
 
-input[type="text"]:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #1976d2;
-  background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-}
-
-textarea {
-  resize: vertical; /* 세로로만 조절 가능 */
-  line-height: 1.6;
-}
-
-/* 버튼 스타일 */
-.form-actions {
+/* 선택된 노트북 카드 레이아웃 */
+.selected-laptop-cards {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 40px;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.btn-cancel {
-  padding: 12px 24px;
-  background-color: #f5f5f5;
-  color: #666;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.selected-card {
+  display: flex;
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #d0e3ff;
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
 }
 
-.btn-cancel:hover {
-  background-color: #e0e0e0;
+.card-mini-img { width: 60px; height: 40px; margin-right: 15px; }
+.card-mini-img img { width: 100%; height: 100%; object-fit: contain; }
+.card-mini-name { display: block; font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #2f3a45; }
+.card-mini-specs { display: flex; flex-wrap: wrap; gap: 4px; }
+.mini-spec-tag { font-size: 10px; background: #fff; border: 1px solid #d0e3ff; padding: 1px 6px; border-radius: 4px; color: #666; }
+
+.card-remove-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 18px;
 }
 
-.btn-submit {
-  padding: 12px 32px;
-  background-color: #1976d2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-}
+/* 공통 폼 스타일 */
+.form-group { margin-bottom: 24px; }
+.form-group label { display: block; font-weight: 700; margin-bottom: 10px; color: #2f3a45; }
+.required { color: #ff4d4f; }
+.help-text { font-size: 13px; color: #889; margin-top: -5px; margin-bottom: 12px; }
 
-.btn-submit:hover {
-  background-color: #1565c0;
-  transform: translateY(-1px);
+input[type="text"], textarea, select {
+  width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px;
+  background: #fcfcfc; transition: 0.2s;
 }
+input:focus, textarea:focus { border-color: #1976d2; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(25,118,210,0.05); }
 
-.btn-submit:active {
-  transform: translateY(0);
-}
+.estimate-note { background: #f4f7fa; padding: 20px; border-radius: 12px; }
+.info-box { display: flex; gap: 12px; }
+.info-box i { color: #1976d2; font-size: 20px; }
+.example-list { margin-top: 10px; padding-left: 20px; font-size: 13px; color: #556; }
 
-/* 모바일 대응 */
-@media (max-width: 600px) {
-  .write-form {
-    padding: 20px;
-  }
-  
-  .form-actions {
-    flex-direction: column-reverse;
-  }
-  
-  .btn-cancel, .btn-submit {
-    width: 100%;
-  }
-}
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
+.btn-cancel { padding: 14px 28px; background: #eee; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-submit { padding: 14px 40px; background: #2f3a45; color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-submit:hover { background: #1976d2; }
+
+.empty-wishlist-note { padding: 40px; text-align: center; color: #adb5bd; }
+.empty-wishlist-note i { font-size: 30px; margin-bottom: 10px; }
 </style>

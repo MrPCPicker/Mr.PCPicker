@@ -226,7 +226,9 @@ export default {
 
     const isSelected = (id) => {
       if (!id) return false;
-      return selectedIds.value.includes(id);
+      // Check both selectedIds and wishlist in localStorage
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      return selectedIds.value.includes(id) || wishlist.some(item => item.id === id);
     };
 
     const isInCart = (id) => {
@@ -391,6 +393,7 @@ export default {
 
     onMounted(() => {
       window.addEventListener("auth-changed", updateAuthState);
+      loadCartFromStorage(); // Load cart state when component mounts
 
       const saved = loadSavedQuery();
       const routeQ = (route.query.q || "").toString().trim();
