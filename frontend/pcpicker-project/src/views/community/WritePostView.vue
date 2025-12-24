@@ -10,15 +10,15 @@
         <label for="category">카테고리</label>
         <div class="select-wrapper">
           <select id="category" v-model="category">
-            <option value="NOTICE">공지사항</option>
-            <option value="QNA">Q&A</option>
-            <option value="ESTIMATE">견적질문</option>
-            <option value="FREE">자유게시판</option>
+            <option value="notice">공지</option>
+            <option value="qna">Q&A</option>
+            <option value="estimate">견적 요청</option>
+            <option value="free">자유게시판</option>
           </select>
         </div>
       </div>
 
-      <div v-if="category === 'ESTIMATE'" class="form-group">
+      <div v-if="category === 'estimate'" class="form-group">
         <label>노트북 선택 <span class="required">*</span></label>
         <p class="help-text">찜 목록에 있는 노트북을 선택해주세요.(여러 개 선택 가능)</p>
         
@@ -57,7 +57,7 @@
         </div>
       </div>
       
-      <div v-if="category === 'ESTIMATE'" class="form-group estimate-note">
+      <div v-if="category === 'estimate'" class="form-group estimate-note">
         <div class="info-box">
           <i class="fas fa-lightbulb"></i>
           <div>
@@ -86,13 +86,13 @@
 
       <div class="form-group">
         <label for="content">내용 <span class="required">*</span></label>
-        <p v-if="category === 'ESTIMATE'" class="help-text">
+        <p v-if="category === 'estimate'" class="help-text">
           견적에 대한 구체적인 질문을 작성해주세요. 다른 사용자들이 도움을 드릴 수 있도록 자세히 적어주시면 좋아요!
         </p>
         <textarea
           id="content"
           v-model="content"
-          :placeholder="category === 'ESTIMATE' ? '예) 이 노트북으로 4K 영상 편집이 가능할까요?\n\n- 사용 목적: 유튜브 4K 영상 편집\n- 주로 사용하는 프로그램: Adobe Premiere Pro, After Effects\n- 기타 고려사항: 배터리 수명도 궁금합니다.' : '내용을 작성해 주세요.'"
+          :placeholder="category === 'estimate' ? '예) 이 노트북으로 4K 영상 편집이 가능할까요?\n\n- 사용 목적: 유튜브 4K 영상 편집\n- 주로 사용하는 프로그램: Adobe Premiere Pro, After Effects\n- 기타 고려사항: 배터리 수명도 궁금합니다.' : '내용을 작성해 주세요.'"
           rows="12"
           required
         ></textarea>
@@ -114,7 +114,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const title = ref('');
 const content = ref('');
-const category = ref('FREE');
+const category = ref('free');
 const selectedLaptopIds = ref([]);
 const selectedLaptops = ref([]);
 const wishlist = ref([]);
@@ -181,7 +181,7 @@ const submitPost = async () => {
     }
 
     // For estimate posts, validate laptop selection
-    if (category.value === 'ESTIMATE') {
+    if (category.value === 'estimate') {
       if (selectedLaptopIds.value.length === 0) {
         alert('견적 문의를 위해 최소 한 개 이상의 노트북을 선택해주세요.');
         return;
@@ -200,14 +200,11 @@ const submitPost = async () => {
     const requestData = {
       title: title.value,
       content: content.value,
-      category: category.value.toLowerCase(),
-      // Add laptop IDs for estimate posts
-      ...(category.value === 'ESTIMATE' && { 
-        laptops: selectedLaptopIds.value,
-        // For backward compatibility, also include the first selected laptop ID
-        ...(selectedLaptopIds.value.length > 0 && { laptop: selectedLaptopIds.value[0] })
-      })
+      category: category.value,
+      ...(category.value === 'estimate' && { laptops: selectedLaptopIds.value })
     };
+    
+    console.log('Submitting post with data:', JSON.stringify(requestData, null, 2));
 
     // Make the API request
     const response = await axios.post(
@@ -233,10 +230,14 @@ const submitPost = async () => {
       // Server responded with an error
       console.error('Error response data:', error.response.data);
       console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
       
       // Show more specific error messages based on the response
       if (error.response.status === 400) {
-        alert(`입력한 내용을 확인해주세요: ${JSON.stringify(error.response.data)}`);
+        const errorMsg = error.response.data.category ? 
+          `카테고리 오류: 유효하지 않은 카테고리 값입니다. (${category.value})` :
+          '입력한 내용을 확인해주세요.';
+        alert(errorMsg);
       } else if (error.response.status === 401) {
         alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
         router.push('/login');
