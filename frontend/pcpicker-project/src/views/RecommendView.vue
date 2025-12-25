@@ -284,11 +284,8 @@ export default {
           price: item.priceValue ?? item.price,
           quantity: 1,
           image: getThumbSrc(item, index),
-<<<<<<< HEAD
-          specs: item.specs || []
-=======
-          shoppingUrl: item.shoppingUrl,
->>>>>>> origin/dev
+          specs: item.specs || [],
+          shoppingUrl: item.shoppingUrl
         };
         wishlist.push(wishlistItem);
         selectedIds.value.push(item.id);
