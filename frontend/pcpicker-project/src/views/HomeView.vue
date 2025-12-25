@@ -22,12 +22,12 @@
               <span class="dot"></span> Expert Selection
             </div>
             <h1 class="hero-title">
-              Build the <span class="highlight-blue">Perfect PC</span><br />
+              Choose the <span class="highlight-blue">Perfect PC</span><br />
               for your needs
             </h1>
             <p class="hero-desc">
               로고의 회로처럼 정교한 분석 시스템을 통해<br />
-              <strong>Mr.PC Picker</strong>가 최적의 부품 조합을 제안합니다.
+              <strong>Mr.PC Picker</strong>가 최적의 PC를 추천합니다.
             </p>
             
             <div class="hero-features">

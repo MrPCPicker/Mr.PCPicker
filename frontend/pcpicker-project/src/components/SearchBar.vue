@@ -44,7 +44,7 @@ export default {
     // 확장 및 컨텐츠 노출 준비가 완료되었을 때만 문구 반환
     activePlaceholder() {
       if (this.isExpanded && this.isContentVisible) {
-        return '용도, 예산, 휴대성, 크기, 사용 기간, 사용 프로그램 등을 작성해주세요\n예) 대학생, 200만원 이하, UnrealEngine, 4~5년, 13인치, 노트북'
+        return '용도, 휴대성, 크기, 사용 기간, 사용 프로그램 등을 작성해주세요\n예) 대학생, UnrealEngine, 4~5년, 13인치, 노트북'
       }
       return ''
     }
