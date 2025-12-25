@@ -758,16 +758,37 @@ def recommend_computers(request):
 
         # 1) GMS 호출 및 파싱
         prompt = f"""당신은 컴퓨터 추천 어시스턴트입니다. 아래 요구사항을 보고 'needs', 'recommends', 'filters'를 포함한 JSON으로 응답하세요.\n[요구사항]\n{query}"""
-        raw = call_gms_openai(prompt)
-
-        # ✅ GMS JSON 안전 파싱
         try:
-            gms_data = json.loads(raw)
-        except Exception:
-            m = re.search(r"\{[\s\S]*\}", raw)
-            if not m:
-                return Response({"detail": "GMS 응답이 JSON이 아닙니다.", "raw": raw[:500]}, status=502)
-            gms_data = json.loads(m.group(0))
+            raw = call_gms_openai(prompt)
+            print(f"[GMS RAW RESPONSE] {raw}")  # 디버깅용 로그 추가
+
+            # ✅ GMS JSON 안전 파싱
+            try:
+                gms_data = json.loads(raw)
+            except json.JSONDecodeError as e:
+                print(f"[JSON PARSE ERROR] {e}")
+                # JSON 형식이 아닌 경우, JSON 부분만 추출 시도
+                m = re.search(r'\{.*\}', raw, re.DOTALL)
+                if m:
+                    try:
+                        gms_data = json.loads(m.group(0))
+                    except json.JSONDecodeError as e2:
+                        print(f"[FALLBACK PARSE ERROR] {e2}")
+                        return Response({
+                            "detail": "GMS 응답을 파싱할 수 없습니다.",
+                            "error": str(e2),
+                            "raw_response": raw[:500]  # 디버깅을 위해 일부 응답 포함
+                        }, status=502)
+                else:
+                    return Response({
+                        "detail": "GMS 응답에서 JSON을 찾을 수 없습니다.",
+                        "raw_response": raw[:500]
+                    }, status=502)
+        except Exception as e:
+            print(f"[GMS CALL ERROR] {str(e)}")
+            return Response({
+                "detail": f"GMS API 호출 중 오류가 발생했습니다: {str(e)}"
+            }, status=500)
 
         # 2) Needs / Recommends
         raw_needs = gms_data.get("needs", [])
