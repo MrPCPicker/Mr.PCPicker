@@ -2,105 +2,107 @@
   <div class="community-page">
     <div class="community-container">
       <header class="page-header">
-        <div class="header-text">
-          <h1 class="title">커뮤니티</h1>
-          <p class="subtitle">Mr.PC Picker 사용자들과 정보를 공유하세요.</p>
-        </div>
-        
-        <div class="page-header-controls">
-          <div class="page-info">
-            <span>총 <strong>{{ totalPosts }}</strong>개의 게시글</span>
-            <span class="page-divider"></span>
-            <span class="page-number">{{ currentPage }} / {{ totalPages }} 페이지</span>
+        <div class="header-content">
+          <div class="header-text">
+            <h1 class="title">커뮤니티 <span>Space</span></h1>
+            <p class="subtitle">Mr.PC Picker 사용자들과 함께 스마트한 IT 생활을 공유하세요.</p>
           </div>
           <button 
             v-if="isAuthenticated" 
-            class="write-btn" 
+            class="write-floating-btn" 
             @click="writePost"
           >
-            <i class="fas fa-edit"></i> 글쓰기
+            <i class="fas fa-pen"></i> 게시글 작성
           </button>
+        </div>
+
+        <div class="stats-overview">
+          <div class="stat-box">
+            <span class="label">총 게시글</span>
+            <span class="value">{{ totalPosts }}</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">현재 페이지</span>
+            <span class="value">{{ currentPage }} / {{ totalPages }}</span>
+          </div>
         </div>
       </header>
 
-      <nav class="category-filter">
-        <button 
-          v-for="category in categories" 
-          :key="category.value"
-          :class="{ 'active': selectedCategory === category.value }"
-          @click="filterByCategory(category.value)"
-        >
-          {{ category.label }}
-        </button>
-      </nav>
+      <div class="filter-wrapper">
+        <nav class="category-tabs">
+          <button 
+            v-for="category in categories" 
+            :key="category.value"
+            :class="{ 'active': selectedCategory === category.value }"
+            @click="filterByCategory(category.value)"
+          >
+            {{ category.label }}
+          </button>
+        </nav>
+      </div>
 
-      <div class="post-list">
-        <div v-if="loading" class="state-message">
-          <div class="loader"></div>
-          <p>게시글을 불러오고 있습니다...</p>
+      <div class="post-list-wrapper">
+        <div v-if="loading" class="state-container">
+          <div class="custom-loader"></div>
+          <p>정보를 불러오는 중입니다...</p>
         </div>
         
-        <div v-else-if="posts.length === 0" class="state-message no-posts">
-          <i class="fas fa-folder-open"></i>
-          <p>등록된 게시글이 없습니다.</p>
+        <div v-else-if="posts.length === 0" class="state-container no-posts">
+          <div class="empty-icon">📂</div>
+          <p>아직 작성된 글이 없습니다. 첫 주인공이 되어보세요!</p>
         </div>
 
-        <div 
-          v-else
-          v-for="post in posts" 
-          :key="post.id" 
-          class="post-card"
-          @click="goToPost(post.id)"
-        >
-          <div class="post-card-header">
-            <span class="post-category" :class="getCategoryClass(post.category)">
-              {{ getCategoryLabel(post.category) }}
-            </span>
-            <h3 class="post-title">{{ post.title }}</h3>
-          </div>
-          
-          <p class="post-excerpt">
-            {{ post.content.substring(0, 120) }}{{ post.content.length > 120 ? '...' : '' }}
-          </p>
-          
-          <div class="post-card-footer">
-            <div class="post-author-info">
-              <span class="author-name">{{ post.author?.username || '익명' }}</span>
-              <span class="dot">·</span>
-              <span class="post-date">{{ formatDate(post.created_at) }}</span>
+        <div v-else class="post-grid">
+          <div 
+            v-for="post in posts" 
+            :key="post.id" 
+            class="premium-post-card"
+            :class="{ 'featured': post.category === 'notice' }"
+            @click="goToPost(post.id)"
+          >
+            <div class="card-top">
+              <span class="category-badge" :class="post.category">
+                {{ getCategoryLabel(post.category) }}
+              </span>
+              <span class="time-stamp">{{ formatDate(post.created_at) }}</span>
             </div>
             
-            <div class="post-stats">
-              <span class="stat-item">
-                <i class="far fa-eye"></i>
-                <span class="stat-label">조회수</span>
-                <span class="stat-value">{{ post.views }}</span>
-              </span>
-              <span class="stat-item">
-                <i class="far fa-thumbs-up"></i>
-                <span class="stat-label">좋아요</span>
-                <span class="stat-value">{{ post.like_count || 0 }}</span>
-              </span>
-              <span class="stat-item">
-                <i class="far fa-comment"></i>
-                <span class="stat-label">댓글</span>
-                <span class="stat-value">{{ post.comment_count || 0 }}</span>
-              </span>
+            <div class="card-body">
+              <h3 class="post-title">{{ post.title }}</h3>
+              <p class="post-preview">{{ truncateContent(post.content) }}</p>
+            </div>
+            
+            <div class="card-bottom">
+              <div class="user-info">
+                <div class="avatar">{{ post.author?.username?.charAt(0) || 'U' }}</div>
+                <span class="username">{{ post.author?.username || '익명' }}</span>
+              </div>
+              <div class="post-counters">
+                <div class="count-item" title="조회수">
+                  <i class="far fa-eye"></i> {{ post.views || 0 }}
+                </div>
+                <div class="count-item liked" title="추천">
+                  <i class="far fa-heart"></i> {{ post.like_count || 0 }}
+                </div>
+                <div class="count-item commented" title="댓글">
+                  <i class="far fa-comment-dots"></i> {{ post.comment_count || 0 }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <nav class="pagination-container">
+      <nav class="modern-pagination" v-if="totalPages > 1">
         <button 
-          class="page-nav-btn" 
+          class="nav-arrow" 
           :disabled="currentPage === 1"
           @click="goToPage(currentPage - 1)"
         >
-          &lt;
+          <i class="fas fa-chevron-left"></i>
         </button>
         
-        <div class="page-numbers">
+        <div class="pages">
           <button 
             v-for="page in pageRange" 
             :key="page"
@@ -112,11 +114,11 @@
         </div>
 
         <button 
-          class="page-nav-btn" 
+          class="nav-arrow" 
           :disabled="currentPage === totalPages"
           @click="goToPage(currentPage + 1)"
         >
-          &gt;
+          <i class="fas fa-chevron-right"></i>
         </button>
       </nav>
     </div>
@@ -132,15 +134,17 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const router = useRouter();
-const isAuthenticated = ref(!!AuthService.getCurrentUser());
 
+// 상태 관리
+const isAuthenticated = ref(!!AuthService.getCurrentUser());
 const posts = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalPosts = ref(0);
-const selectedCategory = ref('');
+const selectedCategory = ref('all');
 
+// 카테고리 정의
 const categories = [
   { value: 'all', label: '전체' },
   { value: 'notice', label: '공지사항' },
@@ -149,6 +153,7 @@ const categories = [
   { value: 'free', label: '자유게시판' },
 ];
 
+// 페이지네이션 범위 계산
 const pageRange = computed(() => {
   const range = [];
   const maxVisiblePages = 5;
@@ -161,50 +166,32 @@ const pageRange = computed(() => {
   }
 
   for (let i = startPage; i <= endPage; i++) {
-    range.push(i);
+    if (i > 0) range.push(i);
   }
   return range;
 });
 
+// 게시글 데이터 가져오기
 const fetchPosts = async (page = 1) => {
   try {
     loading.value = true;
-    // Try to fetch from API first
-    try {
-      const response = await axios.get('http://localhost:8000/articles/', {
-        params: {
-          page,
-          category: selectedCategory.value === 'all' ? '' : selectedCategory.value,
-        },
-      });
-      posts.value = response.data.results || [];
-      totalPosts.value = response.data.count || 0;
-      totalPages.value = Math.ceil(totalPosts.value / 10) || 1;
-      currentPage.value = page;
-    } catch (apiError) {
-      console.warn('API fetch failed, falling back to localStorage', apiError);
-      
-      // Fallback to localStorage
-      const savedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
-      
-      // Filter by category if selected
-      let filteredPosts = [...savedPosts];
-      if (selectedCategory.value && selectedCategory.value !== 'all') {
-        filteredPosts = savedPosts.filter(post => post.type === selectedCategory.value);
-      }
-      
-      // Simple pagination for localStorage
-      const itemsPerPage = 10;
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      
-      posts.value = filteredPosts.slice(startIndex, endIndex);
-      totalPosts.value = filteredPosts.length;
-      totalPages.value = Math.ceil(filteredPosts.length / itemsPerPage) || 1;
-      currentPage.value = page;
-    }
+    const params = {
+      page,
+      category: selectedCategory.value === 'all' ? '' : selectedCategory.value,
+    };
+
+    const response = await axios.get('http://localhost:8000/articles/', { params });
+    
+    // API 응답 구조에 맞게 데이터 할당
+    posts.value = response.data.results || [];
+    totalPosts.value = response.data.count || 0;
+    // 장고 기본 페이징(10개씩) 기준 페이지 수 계산
+    totalPages.value = Math.ceil(totalPosts.value / 10) || 1;
+    currentPage.value = page;
+
   } catch (error) {
     console.error('Error fetching posts:', error);
+    // API 에러 발생 시 초기화
     posts.value = [];
     totalPosts.value = 0;
     totalPages.value = 1;
@@ -213,6 +200,7 @@ const fetchPosts = async (page = 1) => {
   }
 };
 
+// 이벤트 핸들러
 const goToPage = (page) => {
   if (page < 1 || page > totalPages.value || page === currentPage.value) return;
   fetchPosts(page);
@@ -230,25 +218,28 @@ const goToPost = (postId) => {
 };
 
 const writePost = () => {
-  router.push({ name: 'write-post' });
+  router.push('/community/write');
 };
 
+// 포맷팅 함수
 const formatDate = (dateString) => {
   if (!dateString) return '';
   return format(new Date(dateString), 'yyyy.MM.dd', { locale: ko });
 };
 
-const getCategoryClass = (category) => category === 'estimate' ? 'qna' : (category || 'free');
+const truncateContent = (content) => {
+  if (!content) return '';
+  return content.length > 150 ? content.substring(0, 150) + '...' : content;
+};
 
 const getCategoryLabel = (category) => {
   const categoryMap = {
-    'notice': '공지',
-    'qna': '질문',
-    'estimate': '견적',
-    'free': '자유',
-    'tip': '팁',
+    'notice': '공지사항',
+    'qna': 'Q&A',
+    'estimate': '견적질문',
+    'free': '자유게시판',
   };
-  return categoryMap[category] || '자유';
+  return categoryMap[category] || '자유게시판';
 };
 
 onMounted(() => {
@@ -257,301 +248,242 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 이전 스타일 코드 동일 */
 .community-page {
-  background-color: #f8f9fa;
+  background-color: #fcfdfe;
   min-height: 100vh;
-  padding: 40px 20px 80px;
-  font-family: system-ui, -apple-system, sans-serif;
+  padding: 60px 20px;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  color: #334155;
 }
 
 .community-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-/* Header */
 .page-header {
-  margin-bottom: 32px;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #2f3a45;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  color: #6c757d;
-  font-size: 16px;
-  margin-bottom: 24px;
-}
-
-.page-header-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: white;
-  padding: 16px 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-}
-
-.page-info {
-  font-size: 14px;
-  color: #6c757d;
-}
-
-.page-info strong {
-  color: #1e6fd7;
-}
-
-.page-divider {
-  display: inline-block;
-  width: 1px;
-  height: 12px;
-  background: #dee2e6;
-  margin: 0 12px;
-}
-
-.write-btn {
-  background-color: #2f3a45;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.write-btn:hover {
-  background-color: #1e6fd7;
-  transform: translateY(-1px);
-}
-
-/* Category Filter */
-.board-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.category-filter {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.category-filter button {
-  padding: 8px 18px;
-  border: 1px solid #dee2e6;
-  background: white;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #495057;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.category-filter button:hover {
-  border-color: #2f3a45;
-  color: #2f3a45;
-}
-
-.category-filter button.active {
-  background-color: #2f3a45;
-  color: white;
-  border-color: #2f3a45;
-}
-
-/* Post Cards */
-.post-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   margin-bottom: 40px;
 }
 
-.post-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
-  border: 1px solid #f1f3f5;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 10px 0;
+  letter-spacing: -1px;
+}
+
+.title span {
+  color: #3b82f6;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 17px;
+  margin: 0;
+}
+
+.write-floating-btn {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.write-floating-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3);
+  background: #3b82f6;
+}
+
+.stats-overview {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-box {
+  background: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box .label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+.stat-box .value { font-size: 18px; color: #1e293b; font-weight: 700; }
+
+.filter-wrapper {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 5px;
+}
+
+.category-tabs button {
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  position: relative;
   transition: all 0.2s;
 }
 
-.post-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-  border-color: #1e6fd7;
+.category-tabs button:hover { color: #1e293b; }
+
+.category-tabs button.active {
+  color: #3b82f6;
 }
 
-.post-card-header {
+.category-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #3b82f6;
+}
+
+.post-grid {
   display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.premium-post-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-post-card:hover {
+  border-color: #3b82f6;
+  transform: scale(1.01);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.08);
+}
+
+.premium-post-card.featured {
+  background: #f8faff;
+  border-left: 4px solid #3b82f6;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.post-category {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 800;
+.category-badge {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.post-category.notice { background: #fff0f0; color: #e03131; }
-.post-category.qna { background: #e7f5ff; color: #1e6fd7; }
-.post-category.free { background: #f8f9fa; color: #495057; }
+.category-badge.notice { background: #fee2e2; color: #ef4444; }
+.category-badge.qna { background: #dcfce7; color: #22c55e; }
+.category-badge.estimate { background: #eff6ff; color: #3b82f6; }
+.category-badge.free { background: #f1f5f9; color: #64748b; }
+
+.time-stamp { font-size: 13px; color: #94a3b8; }
 
 .post-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: #2f3a45;
-  margin: 0;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #1e293b;
+  margin: 0 0 10px 0;
 }
 
-.post-excerpt {
-  font-size: 14px;
-  color: #6c757d;
+.post-preview {
+  font-size: 15px;
+  color: #64748b;
   line-height: 1.6;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-clamp: 2;
-  text-overflow: ellipsis;
-  max-height: 3.2em;
 }
 
-.post-card-footer {
+.card-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16px;
-  border-top: 1px solid #f8f9fa;
+  padding-top: 20px;
+  border-top: 1px solid #f8fafc;
 }
 
-.post-author-info {
-  font-size: 13px;
-  color: #868e96;
+.user-info { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 32px; height: 32px; background: #e2e8f0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #64748b; font-size: 12px;
 }
+.username { font-size: 14px; font-weight: 600; color: #334155; }
 
-.author-name {
-  font-weight: 600;
-  color: #495057;
-}
+.post-counters { display: flex; gap: 18px; }
+.count-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #94a3b8; font-weight: 600; }
+.count-item.liked i { color: #f43f5e; }
+.count-item.commented i { color: #3b82f6; }
 
-.dot { margin: 0 8px; }
-
-/* Stat Items */
-.post-stats {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #868e96;
-}
-
-.stat-label {
-  font-weight: 500;
-  color: #adb5bd;
-}
-
-.stat-value {
-  font-weight: 600;
-  color: #495057;
-}
-
-.stat-item i {
-  font-size: 14px;
-  color: #dee2e6;
-}
-
-/* Pagination */
-.pagination-container {
+.modern-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
+  margin-top: 50px;
 }
 
-.page-numbers {
-  display: flex;
-  gap: 8px;
-}
-
-.page-numbers button, .page-nav-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  background: white;
-  color: #495057;
-  font-weight: 600;
-  cursor: pointer;
+.pages { display: flex; gap: 8px; }
+.pages button, .nav-arrow {
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 1px solid #e2e8f0; background: white;
+  color: #64748b; font-weight: 700; cursor: pointer;
   transition: all 0.2s;
 }
 
-.page-numbers button.active {
-  background-color: #1e6fd7;
-  color: white;
-  border-color: #1e6fd7;
+.pages button.active {
+  background: #3b82f6; color: white; border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.page-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.state-container { text-align: center; padding: 100px 0; color: #94a3b8; }
+.custom-loader {
+  width: 40px; height: 40px; border: 4px solid #f1f5f9;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 15px;
 }
 
-/* States */
-.state-message {
-  text-align: center;
-  padding: 80px 0;
-}
-
-.loader {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #1e6fd7;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@media (max-width: 600px) {
-  .page-header-controls {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  .stat-label {
-    display: none; /* 모바일에선 글자 숨김 */
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
