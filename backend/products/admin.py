@@ -28,15 +28,23 @@ class ProductDetailRawAdmin(admin.ModelAdmin):
 class ProductDetailSpecAdmin(admin.ModelAdmin):
     list_display = (
         "product_id",
-        "product_type",
         "brand",
+        "category",
         "model",
+        "version",
+        "release_date",
         "os",
+        "cpu",
+        "gpu",
         "ram_gb",
         "storage_gb",
         "weight_kg",
         "display_inch",
+        "price_text",
+        "battery_wh",
+        "charging_power_w",
+        "updated_at",
     )
-    list_filter = ("product_type", "os")
-    search_fields = ("product_id", "brand", "model")
-
+    # ✅ product_type 제거 (모델에 없음)
+    list_filter = ("category", "brand", "os")
+    search_fields = ("product_id", "brand", "category", "model", "version", "cpu", "gpu", "os")
