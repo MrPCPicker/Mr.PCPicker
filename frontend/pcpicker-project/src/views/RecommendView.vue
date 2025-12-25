@@ -2,7 +2,7 @@
   <div class="recommend-page">
     <section class="recommend-hero">
       <div class="recommend-inner">
-        <!-- 왼쪽: 추천 컴퓨터 카드 리스트 (최대 3개) -->
+        <!-- 왼쪽: 추천 컴퓨터 카드 리스트 -->
         <div class="left-column">
           <h2 class="left-title">Recommended computers for you</h2>
 
@@ -20,7 +20,7 @@
               <div class="product-thumb">
                 <img
                   :src="getThumbSrc(item, index)"
-                  :alt="item.title || '추천 컴퓨터 목업 이미지'"
+                  :alt="item.title || '추천 컴퓨터 이미지'"
                 />
                 <div class="thumb-overlay"></div>
                 <div class="price-tag">{{ formatPrice(item) }}</div>
@@ -30,18 +30,30 @@
                 <h3 class="product-title">
                   <a
                     v-if="item.shoppingUrl"
-                    class="product-link"
                     :href="item.shoppingUrl"
                     target="_blank"
                     rel="noopener noreferrer"
+                    class="product-link"
                   >
                     {{ item.title }}
                   </a>
                   <span v-else>{{ item.title }}</span>
                 </h3>
+
+                <!-- ✅ GPU 문자열(dict) 가독성 처리 -->
                 <ul class="product-specs">
-                  <li v-for="(spec, sIdx) in (item.specs || [])" :key="sIdx">
-                    {{ spec }}
+                  <li
+                    v-for="(spec, sIdx) in (item.specs || [])"
+                    :key="sIdx"
+                  >
+                    <template
+                      v-if="typeof spec === 'string' && spec.startsWith('GPU:')"
+                    >
+                      {{ formatGpuSpecFromString(spec) }}
+                    </template>
+                    <template v-else>
+                      {{ spec }}
+                    </template>
                   </li>
                 </ul>
               </div>
@@ -49,10 +61,9 @@
               <button
                 class="plus-badge"
                 :class="{ 'in-cart': isSelected(item.id) }"
-                @click="handlePlusClick(item, index)"
-                :aria-pressed="isSelected(item.id)"
+                @click="handlePlusClick(item)"
               >
-                {{ isSelected(item.id) ? '-' : '+' }}
+                {{ isSelected(item.id) ? "-" : "+" }}
               </button>
             </article>
 
@@ -62,14 +73,13 @@
           </template>
         </div>
 
-        <!-- 오른쪽: GMS 요약 + 요구사항 편집 영역 -->
+        <!-- 오른쪽 요약 -->
         <div class="right-column">
           <div class="summary-bubble">
             <textarea
               v-model="editableQuery"
               class="summary-input"
               @keydown.enter="handleQueryEnter"
-              aria-label="Edit your requirements"
             ></textarea>
           </div>
 
@@ -83,20 +93,15 @@
               </div>
             </template>
 
-            <!-- ✅ 에러일 때는 Needs / Recommend 영역 자체를 숨김 -->
             <template v-else-if="!error">
               <h4>Needs</h4>
               <ul>
-                <li v-for="(need, nIdx) in needsList" :key="'need-' + nIdx">
-                  {{ need }}
-                </li>
+                <li v-for="(n, i) in needsList" :key="i">{{ n }}</li>
               </ul>
 
               <h4>Recommend</h4>
               <ul>
-                <li v-for="(rec, rIdx) in recommendList" :key="'rec-' + rIdx">
-                  {{ rec }}
-                </li>
+                <li v-for="(r, i) in recommendList" :key="i">{{ r }}</li>
               </ul>
             </template>
           </div>
@@ -114,44 +119,42 @@
       </div>
     </section>
 
-    <!-- 🔹 로그인 모달 -->
-    <LoginModal
-      v-if="showLoginModal"
-      @close="closeLoginModal"
-      @logged-in="handleLoggedIn"
-      @open-register="openRegisterFromLogin"
-    />
-
-    <!-- 🔹 회원가입 모달 -->
-    <RegisterModal
-      v-if="showRegisterModal"
-      @close="closeRegisterModal"
-      @registered="handleRegistered"
-      @open-login="openLoginFromRegister"
-    />
+    <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
+    <RegisterModal v-if="showRegisterModal" @close="showRegisterModal = false" />
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchComputerRecommendations } from "@/services/gmsService";
 import AuthService from "@/services/AuthService";
 import LoginModal from "@/components/LoginModal.vue";
 import RegisterModal from "@/components/RegisterModal.vue";
 
-const CART_STORAGE_KEY = "mrpcpicker_cart";
-const RECOMMEND_QUERY_STORAGE_KEY = "mrpcpicker_recommend_query";
-
 export default {
   name: "RecommendView",
-  components: {
-    LoginModal,
-    RegisterModal,
-  },
+  components: { LoginModal, RegisterModal },
+
   setup() {
     const route = useRoute();
     const router = useRouter();
+
+    const query = ref(route.query.q || "");
+    const editableQuery = ref(query.value);
+
+    const loading = ref(false);
+    const error = ref(null);
+
+    const results = ref([]);
+    const needs = ref([]);
+    const recommends = ref([]);
+
+    const selectedIds = ref([]);
+    const isAuthenticated = ref(!!AuthService.getCurrentUser());
+
+    const showLoginModal = ref(false);
+    const showRegisterModal = ref(false);
 
     const mockImages = [
       "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg",
@@ -159,321 +162,121 @@ export default {
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4kjRPi9UekiErQNI9YLi_R21z5-iFYaey4w&s",
     ];
 
-    const getThumbSrc = (item, index) => {
-      // ✅ 백엔드에서 imageUrl 내려오면 그걸 최우선 사용
-      if (item && item.imageUrl) return item.imageUrl;
-      return mockImages[index % mockImages.length];
-    };
-
-    const query = ref(route.query.q || "");
-    const editableQuery = ref(query.value);
-
-    const loadSavedQuery = () => {
-      try {
-        const saved = (localStorage.getItem(RECOMMEND_QUERY_STORAGE_KEY) || "").trim();
-        if (!saved) return "";
-        return saved;
-      } catch (e) {
-        return "";
-      }
-    };
-
-    const saveQuery = (val) => {
-      try {
-        const v = (val || "").trim();
-        if (!v) return;
-        localStorage.setItem(RECOMMEND_QUERY_STORAGE_KEY, v);
-      } catch (e) {
-        // ignore
-      }
-    };
-
-    const loading = ref(false);
-    const error = ref(null);
-
-    const results = ref([]);
-    const needs = ref([]);
-    const summary = ref("");
-    const recommends = ref([]);
-
-    const isAuthenticated = ref(!!AuthService.getCurrentUser());
-
-    const cart = ref([]);
-    const selectedIds = ref([]);
-
-    const showLoginModal = ref(false);
-    const showRegisterModal = ref(false);
-
-    const updateAuthState = () => {
-      isAuthenticated.value = !!AuthService.getCurrentUser();
-    };
-
-    const loadCartFromStorage = () => {
-      try {
-        const raw = localStorage.getItem(CART_STORAGE_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) cart.value = parsed;
-      } catch (e) {
-        console.warn("[CART] Failed to parse cart from storage:", e);
-      }
-    };
-
-    const saveCartToStorage = () => {
-      try {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.value));
-      } catch (e) {
-        console.warn("[CART] Failed to save cart to storage:", e);
-      }
-    };
-
-    const isSelected = (id) => {
-      if (!id) return false;
-      // Check both selectedIds and wishlist in localStorage
-      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-      return selectedIds.value.includes(id) || wishlist.some(item => item.id === id);
-    };
-
-    const isInCart = (id) => {
-      if (!id) return false;
-      return cart.value.some((item) => item.id === id);
-    };
-
-    const toggleSelectionAndCart = (item) => {
-      if (!item || !item.id) return;
-      const id = item.id;
-
-      if (isSelected(id)) {
-        selectedIds.value = selectedIds.value.filter((x) => x !== id);
-        cart.value = cart.value.filter((c) => c.id !== id);
-      } else {
-        selectedIds.value.push(id);
-        if (!isInCart(id)) {
-          cart.value.push({
-            id: item.id,
-            title: item.title,
-            // ✅ 표시용/숫자용 둘 다 보존
-            price: item.price,
-            priceValue: item.priceValue,
-            imageUrl: item.imageUrl || getThumbSrc(item, 0),
-            shoppingUrl: item.shoppingUrl,
-            specs: item.specs || [],
-          });
-        }
-      }
-
-      saveCartToStorage();
-    };
-
-    const handlePlusClick = (item, index) => {
-      if (!isAuthenticated.value) {
-        showRegisterModal.value = false;
-        showLoginModal.value = true;
-        return;
-      }
-      
-      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-      const existingItemIndex = wishlist.findIndex(wishlistItem => wishlistItem.id === item.id);
-      
-      if (existingItemIndex === -1) {
-        // Add to wishlist
-        const wishlistItem = {
-          id: item.id,
-          name: item.title,
-          // ✅ SerpApi 가격을 우선 사용(숫자형 있으면 저장)
-          price: item.priceValue ?? item.price,
-          quantity: 1,
-          image: getThumbSrc(item, index),
-          specs: item.specs || [],
-          shoppingUrl: item.shoppingUrl
-        };
-        wishlist.push(wishlistItem);
-        selectedIds.value.push(item.id);
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('wishlist-updated'));
-        alert(`${item.title}이(가) 찜 목록에 추가되었습니다.`);
-      } else {
-        // Remove from wishlist
-        wishlist.splice(existingItemIndex, 1);
-        selectedIds.value = selectedIds.value.filter(id => id !== item.id);
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('wishlist-updated'));
-        alert(`${item.title}이(가) 찜 목록에서 제거되었습니다.`);
-      }
-    };
-
-    const closeLoginModal = () => {
-      showLoginModal.value = false;
-    };
-
-    const closeRegisterModal = () => {
-      showRegisterModal.value = false;
-    };
-
-    const openRegisterFromLogin = () => {
-      showLoginModal.value = false;
-      showRegisterModal.value = true;
-    };
-
-    const openLoginFromRegister = () => {
-      showRegisterModal.value = false;
-      showLoginModal.value = true;
-    };
-
-    const handleLoggedIn = () => {
-      updateAuthState();
-      showLoginModal.value = false;
-    };
-
-    const handleRegistered = () => {
-      updateAuthState();
-      showRegisterModal.value = false;
-    };
+    const getThumbSrc = (item, index) =>
+      item?.imageUrl || mockImages[index % mockImages.length];
 
     const topThree = computed(() => results.value.slice(0, 3));
     const needsList = computed(() => needs.value || []);
     const recommendList = computed(() => recommends.value || []);
 
+    /* ✅ 핵심: GPU 문자열(dict) 파싱 */
+    const formatGpuSpecFromString = (spec) => {
+      if (!spec.startsWith("GPU:")) return spec;
+
+      const raw = spec.replace("GPU:", "").trim();
+      if (!raw.startsWith("{") || !raw.endsWith("}")) return spec;
+
+      const body = raw.slice(1, -1);
+      const parts = body.split(",").map((p) => p.trim());
+
+      const cleaned = parts
+        .map((p) => {
+          const [key, value] = p.split(":");
+          if (!key || !value) return null;
+
+          const readableKey = key
+            .replace(/['"]/g, "")
+            .replace(/_/g, " ")
+            .replace(/([A-Z])/g, " $1")
+            .trim();
+
+          const readableValue = value.replace(/['"]/g, "").trim();
+          if (!readableValue) return null;
+
+          return `${readableKey}: ${readableValue}`;
+        })
+        .filter(Boolean);
+
+      return cleaned.length
+        ? `GPU: ${cleaned.join(", ")}`
+        : "GPU 정보 없음";
+    };
+
     const loadRecommendations = async () => {
       if (!query.value) return;
-
-      saveQuery(query.value);
-
       loading.value = true;
       error.value = null;
 
       try {
         const data = await fetchComputerRecommendations(query.value);
-        if (!data) return;
-
         results.value = data.results || [];
         needs.value = data.needs || [];
-        summary.value = data.summary || "";
         recommends.value = data.recommends || [];
         selectedIds.value = [];
-      } catch (err) {
-        console.error("추천 호출 실패:", err);
-        error.value = err;
+      } catch (e) {
+        error.value = e;
       } finally {
         loading.value = false;
       }
     };
 
     const rewriteSearch = async () => {
-      const nextQuery = (editableQuery.value || "").trim();
-      if (!nextQuery || loading.value) return;
-
-      query.value = nextQuery;
-
-      saveQuery(nextQuery);
-      try {
-        await router.replace({
-          name: "Recommend",
-          query: { ...route.query, q: nextQuery },
-        });
-      } catch (e) {
-        // ignore
-      }
+      if (!editableQuery.value.trim()) return;
+      query.value = editableQuery.value.trim();
+      await router.replace({ name: "Recommend", query: { q: query.value } });
       await loadRecommendations();
     };
 
     const handleQueryEnter = async (e) => {
-      if (!e) return;
-      if (e.shiftKey) return;
-      e.preventDefault();
-      await rewriteSearch();
+      if (!e.shiftKey) {
+        e.preventDefault();
+        await rewriteSearch();
+      }
     };
 
-    const formatPrice = (item) => {
-      // ✅ 숫자형(priceValue)이 있으면 그걸로 KRW 포맷
-      const pv = item?.priceValue;
-      if (pv !== null && pv !== undefined && pv !== "" && !Number.isNaN(Number(pv))) {
-        return new Intl.NumberFormat("ko-KR", {
-          style: "currency",
-          currency: "KRW",
-          maximumFractionDigits: 0,
-        }).format(Number(pv));
-      }
+    const isSelected = (id) => selectedIds.value.includes(id);
 
-      // ✅ 문자열(price)이 있으면 그대로 보여줌 ("₩1,234,000" 같은 형태)
-      const pt = item?.price;
-      if (pt !== null && pt !== undefined && String(pt).trim() !== "") {
-        return String(pt);
+    const handlePlusClick = (item) => {
+      if (!isAuthenticated.value) {
+        showLoginModal.value = true;
+        return;
       }
-
-      return "가격 정보 없음";
+      selectedIds.value.includes(item.id)
+        ? (selectedIds.value = selectedIds.value.filter((i) => i !== item.id))
+        : selectedIds.value.push(item.id);
     };
 
-    onMounted(() => {
-      window.addEventListener("auth-changed", updateAuthState);
-      loadCartFromStorage(); // Load cart state when component mounts
+    const formatPrice = (item) =>
+      item?.priceValue
+        ? new Intl.NumberFormat("ko-KR", {
+            style: "currency",
+            currency: "KRW",
+            maximumFractionDigits: 0,
+          }).format(item.priceValue)
+        : item?.price || "가격 정보 없음";
 
-      const saved = loadSavedQuery();
-      const routeQ = (route.query.q || "").toString().trim();
-      const initial = routeQ || saved;
-      if (initial) {
-        query.value = initial;
-        editableQuery.value = initial;
-        saveQuery(initial);
-      }
-
-      loadCartFromStorage();
-      loadRecommendations();
-    });
-
-    onUnmounted(() => {
-      window.removeEventListener("auth-changed", updateAuthState);
-    });
-
-    watch(editableQuery, (v) => {
-      saveQuery(v);
-    });
-
-    watch(
-      () => [route.query.q, route.query.ts],
-      async ([nextQ]) => {
-        const q = (nextQ || "").toString().trim();
-        if (!q) return;
-
-        query.value = q;
-        editableQuery.value = q;
-        saveQuery(q);
-        await loadRecommendations();
-      }
-    );
+    onMounted(loadRecommendations);
 
     return {
-      query,
       editableQuery,
       loading,
       error,
-      results,
       topThree,
       needsList,
       recommendList,
       rewriteSearch,
       handleQueryEnter,
       formatPrice,
-      isAuthenticated,
-      cart,
       isSelected,
       handlePlusClick,
       showLoginModal,
       showRegisterModal,
-      closeLoginModal,
-      closeRegisterModal,
-      openRegisterFromLogin,
-      openLoginFromRegister,
-      handleLoggedIn,
-      handleRegistered,
+      formatGpuSpecFromString,
       getThumbSrc,
     };
   },
 };
 </script>
-
 <style scoped>
 .recommend-page {
   min-height: 100vh;
