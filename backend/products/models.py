@@ -20,7 +20,6 @@ class Laptop(models.Model):
     os = models.CharField(max_length=50)
     warranty = models.CharField(max_length=50)
 
-# 1️⃣ models.py (3개 모델 전체)
 
 class ProductSearch(models.Model):
     """
@@ -40,6 +39,7 @@ class ProductSearch(models.Model):
     def __str__(self):
         return f"[{self.brand}] {self.model}"
 
+
 class ProductDetailRaw(models.Model):
     """
     TechSpecs Product Detail API 원본 저장
@@ -52,34 +52,47 @@ class ProductDetailRaw(models.Model):
     def __str__(self):
         return f"RAW {self.product_id}"
 
+
 class ProductDetailSpec(models.Model):
     """
-    추천/검색/GMS용 정규화 스펙
+    추천/검색/GMS/화면용 정규화 스펙
+    - ProductSearch의 고정 필드를 그대로 포함
+    - + ProductDetailRaw에서 파싱한 사양 필드 포함
     """
-    PRODUCT_TYPE_CHOICES = [
+    product_id = models.CharField(max_length=64, unique=True)
+
+    PRODUCT_TYPE_CHOICES = (
         ("laptop", "Laptop"),
         ("desktop", "Desktop"),
-        ("aio", "All-in-One"),
+        ("allinone", "All-in-one"),
         ("unknown", "Unknown"),
-    ]
+    )
+    product_type = models.CharField(
+        max_length=20,
+        choices=PRODUCT_TYPE_CHOICES,
+        default="unknown",
+        db_index=True,
+    )
 
-    product_id = models.CharField(max_length=64, unique=True)
-    product_type = models.CharField(max_length=16, choices=PRODUCT_TYPE_CHOICES, default="unknown")
+    # ✅ ProductSearch에서 그대로 복사되는 고정 메타 필드
+    brand = models.CharField(max_length=128, null=True, blank=True)
+    category = models.CharField(max_length=128, null=True, blank=True)
+    model = models.CharField(max_length=256, null=True, blank=True)
+    version = models.CharField(max_length=128, blank=True, default="")
+    release_date = models.CharField(max_length=32, blank=True, default="")
 
-    brand = models.CharField(max_length=128)
-    model = models.CharField(max_length=256)
+    # ✅ 사양 관련 필드 (ProductDetailRaw에서 파싱)
+    os = models.CharField(max_length=128, blank=True, default="")
+    cpu = models.CharField(max_length=256, blank=True, default="")
+    gpu = models.CharField(max_length=256, blank=True, default="")
 
-    # 핵심 사양
-    os = models.CharField(max_length=128, blank=True)
-    cpu = models.CharField(max_length=256, blank=True)
-    gpu = models.CharField(max_length=256, blank=True)
     ram_gb = models.IntegerField(null=True, blank=True)
     storage_gb = models.IntegerField(null=True, blank=True)
     weight_kg = models.FloatField(null=True, blank=True)
     display_inch = models.FloatField(null=True, blank=True)
 
-    # 가격 / 전원
-    price_text = models.CharField(max_length=256, blank=True)
+    # ✅ 가격 / 전원
+    price_text = models.CharField(max_length=256, blank=True, default="")
     battery_wh = models.FloatField(null=True, blank=True)
     charging_power_w = models.IntegerField(null=True, blank=True)
 
@@ -87,4 +100,3 @@ class ProductDetailSpec(models.Model):
 
     def __str__(self):
         return f"SPEC {self.product_id}"
-
