@@ -357,9 +357,8 @@
           </div>
         </template>
       </div> <!-- Close search-content -->
-      </div> <!-- Close search-content -->
     </div> <!-- Close search-layout -->
-  </div>
+
 </template>
 
 <script>

@@ -42,10 +42,8 @@
 
     <main class="main-container">
       <div v-if="cartItems.length === 0" class="empty-wishlist animate-fade-up">
-        <div class="empty-symbol">!</div>
         <h2>위시리스트가 비어있습니다</h2>
-        <p>나만의 정교한 PC 구성을 위해 제품을 추가해보세요.</p>
-        <router-link to="/community" class="browse-btn">제품 탐색하기</router-link>
+        <p>나만의 PC를 위해 제품을 추가해보세요.</p>
       </div>
 
       <div v-else class="wishlist-content">
@@ -74,11 +72,11 @@
             </div>
             
             <div class="card-image-box">
-              <img :src="getItemImage(item)" :alt="item.name" class="card-image">
+              <img :src="getItemImage(item)" :alt="item.title || '제품 이미지'" class="card-image">
             </div>
 
             <div class="card-body">
-              <h3 class="item-name">{{ item.name }}</h3>
+              <h3 class="item-name">{{ item.title || '제품명 없음' }}</h3>
               
               <div v-if="item.specs && item.specs.length > 0" class="item-specs">
                 <span v-for="(spec, specIndex) in item.specs" :key="specIndex" class="spec-tag">
@@ -91,19 +89,20 @@
                   <span class="price-label">판매가</span>
                   <span class="price-val">₩{{ formatPrice(item.price) }}</span>
                 </div>
-                <button 
-                  v-if="item.shoppingUrl" 
-                  @click.stop="goToShopLink(item.shoppingUrl)" 
-                  class="shop-btn-premium"
+                <a 
+                  v-if="item.shoppingUrl"
+                  :href="item.shoppingUrl" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="shop-link"
+                  @click.stop
                 >
-                  구매하기 <i class="fas fa-external-link-alt"></i>
-                </button>
+                  <i class="fas fa-shopping-cart"></i> 쇼핑몰 바로가기
+                </a>
               </div>
             </div>
           </div>
         </div>
-
-
       </div>
     </main>
   </div>
@@ -131,7 +130,7 @@ export default {
   },
   methods: {
     getItemImage(item) {
-      return item.image || item.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image';
+      return item.imageUrl || item.image || 'https://via.placeholder.com/300x200?text=No+Image';
     },
     formatPrice(price) {
       return price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
@@ -146,6 +145,9 @@ export default {
       } else {
         this.selectedItems.push(itemId);
       }
+    },
+    toggleSelectAll() {
+      this.selectAll = !this.selectAll;
     },
     sortItems() {
       if (this.sortOption === 'price_asc') {
@@ -391,22 +393,37 @@ export default {
 .price-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
 .price-val { font-size: 22px; font-weight: 800; color: #1e293b; }
 
-.shop-btn-premium {
-  background: #3B82F6;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.shop-btn-premium:hover {
+.shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #3B82F6;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid #3B82F6;
+}
+
+.shop-link:hover {
   background: #2563eb;
-  transform: translateY(-2px);
+  border-color: #2563eb;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.shop-link i {
+  font-size: 14px;
 }
 
 /* ----- 기타 버튼 및 애니메이션 ----- */

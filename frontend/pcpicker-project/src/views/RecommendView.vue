@@ -1,5 +1,10 @@
 <template>
   <div class="recommend-page">
+    <!-- Toast Notification -->
+    <div v-if="toast.show" class="toast" :class="{ 'toast-success': !toast.isError, 'toast-error': toast.isError }">
+      {{ toast.message }}
+    </div>
+    
     <section class="recommend-hero">
       <div class="recommend-inner">
         <!-- 왼쪽: 추천 컴퓨터 카드 리스트 -->
@@ -155,6 +160,25 @@ export default {
 
     const showLoginModal = ref(false);
     const showRegisterModal = ref(false);
+    
+    // Toast notification
+    const toast = ref({
+      show: false,
+      message: '',
+      isError: false
+    });
+    
+    const showToast = (message, isError = false) => {
+      toast.value = {
+        show: true,
+        message,
+        isError
+      };
+      
+      setTimeout(() => {
+        toast.value.show = false;
+      }, 3000);
+    };
 
     const mockImages = [
       "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/laptops/geforce-rtx-50-series-laptops-learn-og-1200x630-new.jpg",
@@ -241,9 +265,37 @@ export default {
         showLoginModal.value = true;
         return;
       }
-      selectedIds.value.includes(item.id)
-        ? (selectedIds.value = selectedIds.value.filter((i) => i !== item.id))
-        : selectedIds.value.push(item.id);
+      
+      // Load current wishlist from localStorage
+      const currentWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      
+      if (selectedIds.value.includes(item.id)) {
+        // Remove from wishlist
+        selectedIds.value = selectedIds.value.filter((i) => i !== item.id);
+        const updatedWishlist = currentWishlist.filter((i) => i.id !== item.id);
+        localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+        showToast(`'${item.title}'이(가) 위시리스트에서 제거되었습니다.`);
+      } else {
+        // Add to wishlist
+        selectedIds.value.push(item.id);
+        
+        // Create a clean item object with only necessary properties
+        const wishlistItem = {
+          id: item.id,
+          title: item.title,
+          price: item.priceValue || 0,
+          imageUrl: item.imageUrl || mockImages[Math.floor(Math.random() * mockImages.length)],
+          specs: item.specs || [],
+          shoppingUrl: item.shoppingUrl || ''
+        };
+        
+        const updatedWishlist = [...currentWishlist, wishlistItem];
+        localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+        showToast(`'${item.title}'이(가) 위시리스트에 추가되었습니다.`);
+      }
+      
+      // Trigger wishlist update event for other components
+      window.dispatchEvent(new Event('wishlist-updated'));
     };
 
     const formatPrice = (item) =>
@@ -255,7 +307,13 @@ export default {
           }).format(item.priceValue)
         : item?.price || "가격 정보 없음";
 
-    onMounted(loadRecommendations);
+    onMounted(() => {
+      loadRecommendations();
+      
+      // Load wishlist from localStorage when component mounts
+      const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      selectedIds.value = savedWishlist.map(item => item.id);
+    });
 
     return {
       editableQuery,
@@ -273,6 +331,7 @@ export default {
       showRegisterModal,
       formatGpuSpecFromString,
       getThumbSrc,
+      toast,
     };
   },
 };
@@ -524,5 +583,41 @@ export default {
 
 .rewrite-btn:hover:enabled {
   opacity: 0.9;
+}
+
+/* Toast Notification Styles */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  background-color: #10b981;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toast-success {
+  background-color: #10b981;
+}
+
+.toast-error {
+  background-color: #ef4444;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 </style>
