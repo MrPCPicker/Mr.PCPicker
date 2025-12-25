@@ -1,18 +1,34 @@
 <template>
   <div class="wishlist-page">
     <header class="wishlist-hero">
+      <div class="circuit-container">
+        <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="circuit-line line-1" d="M0 200H200L300 300H500L600 200H1000" />
+          <path class="circuit-line line-2" d="M1000 800H800L700 700H400L300 800H0" />
+          <path class="circuit-line line-3" d="M200 0V300L100 400V600L200 700V1000" />
+          <path class="circuit-line line-4" d="M800 1000V700L900 600V400L800 300V0" />
+          <circle class="circuit-node" cx="300" cy="300" r="4" />
+          <circle class="circuit-node" cx="700" cy="700" r="4" />
+        </svg>
+      </div>
+      <div class="bg-overlay"></div>
+      <div class="bg-glow blob-main"></div>
+
       <div class="hero-inner">
-        <div class="hero-text">
+        <div class="hero-text animate-fade-up">
+          <div class="hero-badge">
+            <span class="dot"></span> My Collection
+          </div>
           <h1 class="hero-title">
-            WISHLIST
+            Your <span class="highlight-blue">Wishlist</span>
           </h1>
           <p class="hero-desc">
-            관심 있는 제품을 한눈에 비교하고 관리하세요.<br />
-            나만의 구성을 완성하기 위한 최적의 아이템들입니다.
+            정교하게 선별된 당신만의 부품 리스트를 관리하세요.<br />
+            최적의 구성을 위한 마지막 단계입니다.
           </p>
         </div>
 
-        <div class="hero-actions">
+        <div class="hero-actions animate-fade-left">
           <div class="modern-select-wrapper">
             <select v-model="sortOption" @change="sortItems" class="modern-select">
               <option value="recent">LATEST</option>
@@ -25,28 +41,24 @@
     </header>
 
     <main class="main-container">
-      <div v-if="cartItems.length === 0" class="empty-wishlist">
+      <div v-if="cartItems.length === 0" class="empty-wishlist animate-fade-up">
         <div class="empty-symbol">!</div>
-        <h2>찜한 상품이 없습니다</h2>
-        <p>나만의 구성을 위한 아이템을 찾아보세요.</p>
-        <router-link to="/community" class="browse-btn">COLLECTION EXPLORE</router-link>
+        <h2>위시리스트가 비어있습니다</h2>
+        <p>나만의 정교한 PC 구성을 위해 제품을 추가해보세요.</p>
+        <router-link to="/community" class="browse-btn">제품 탐색하기</router-link>
       </div>
 
       <div v-else class="wishlist-content">
         <div class="control-bar">
-          <label class="modern-checkbox-container">
-            <input type="checkbox" v-model="selectAll">
-            <span class="checkmark"></span>
-            <span class="label-txt">SELECT ALL ({{ selectedItems.length }}/{{ cartItems.length }})</span>
-          </label>
-          
-          <button 
-            v-show="selectedItems.length > 0" 
-            @click="removeSelected" 
-            class="btn-action-delete"
-          >
-            선택 삭제
-          </button>
+          <div class="control-left">
+            <div class="select-all-checkbox" @click="toggleSelectAll">
+              <span class="checkmark" :class="{ 'checked': selectAll }"></span>
+              <span class="label-txt">전체 선택 ({{ selectedItems.length }}/{{ cartItems.length }})</span>
+            </div>
+            <button v-show="selectedItems.length > 0" @click.stop="removeSelected" class="btn-action-delete">
+              선택 삭제
+            </button>
+          </div>
         </div>
 
         <div class="wishlist-grid">
@@ -55,15 +67,11 @@
             :key="item.id" 
             class="wishlist-card"
             :class="{ 'is-selected': isSelected(item.id) }"
+            @click="toggleSelect(item.id)" 
           >
-            <label class="card-check-overlay">
-              <input 
-                type="checkbox" 
-                :value="item.id"
-                v-model="selectedItems"
-              >
-              <span class="checkmark"></span>
-            </label>
+            <div class="card-check-indicator">
+              <span class="checkmark" :class="{ 'checked': isSelected(item.id) }"></span>
+            </div>
             
             <div class="card-image-box">
               <img :src="getItemImage(item)" :alt="item.name" class="card-image">
@@ -79,17 +87,23 @@
               </div>
               
               <div class="item-price-row">
-                <span class="price-val">₩{{ formatPrice(item.price) }}</span>
+                <div class="price-info">
+                  <span class="price-label">판매가</span>
+                  <span class="price-val">₩{{ formatPrice(item.price) }}</span>
+                </div>
+                <button 
+                  v-if="item.shoppingUrl" 
+                  @click.stop="goToShopLink(item.shoppingUrl)" 
+                  class="shop-btn-premium"
+                >
+                  구매하기 <i class="fas fa-external-link-alt"></i>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="page-footer">
-          <button @click="clearWishlist" class="btn-clear-all">
-             <i class="fas fa-trash-alt"></i> 위시리스트 전체 비우기
-          </button>
-        </div>
+
       </div>
     </main>
   </div>
@@ -100,14 +114,12 @@ export default {
   name: 'WishlistView',
   data() {
     return {
-      // 로컬 스토리지에서 데이터 로드
       cartItems: JSON.parse(localStorage.getItem('wishlist') || '[]'),
       selectedItems: [],
       sortOption: 'recent'
     };
   },
   computed: {
-    // 전체 선택 로직
     selectAll: {
       get() {
         return this.cartItems.length > 0 && this.selectedItems.length === this.cartItems.length;
@@ -119,7 +131,7 @@ export default {
   },
   methods: {
     getItemImage(item) {
-      return item.image || item.imageUrl || 'https://via.placeholder.com/200';
+      return item.image || item.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image';
     },
     formatPrice(price) {
       return price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
@@ -127,24 +139,33 @@ export default {
     isSelected(itemId) {
       return this.selectedItems.includes(itemId);
     },
-    // 정렬 기능
+    toggleSelect(itemId) {
+      const index = this.selectedItems.indexOf(itemId);
+      if (index > -1) {
+        this.selectedItems.splice(index, 1);
+      } else {
+        this.selectedItems.push(itemId);
+      }
+    },
     sortItems() {
       if (this.sortOption === 'price_asc') {
         this.cartItems.sort((a, b) => a.price - b.price);
       } else if (this.sortOption === 'price_desc') {
         this.cartItems.sort((a, b) => b.price - a.price);
       } else {
-        // 기본 최신순 (id 내림차순 등)
-        this.cartItems.sort((a, b) => b.id - a.id);
+        this.cartItems.sort((a, b) => (b.id || 0) - (a.id || 0));
       }
     },
-    // 선택 삭제
-    removeSelected() {
-      this.cartItems = this.cartItems.filter(item => !this.selectedItems.includes(item.id));
-      this.selectedItems = [];
-      this.saveWishlist();
+    goToShopLink(link) {
+      if (link) window.open(link, '_blank', 'noopener,noreferrer');
     },
-    // 전체 비우기
+    removeSelected() {
+      if (confirm(`선택한 ${this.selectedItems.length}개의 상품을 삭제하시겠습니까?`)) {
+        this.cartItems = this.cartItems.filter(item => !this.selectedItems.includes(item.id));
+        this.selectedItems = [];
+        this.saveWishlist();
+      }
+    },
     clearWishlist() {
       if (confirm('위시리스트의 모든 상품을 삭제하시겠습니까?')) {
         this.cartItems = [];
@@ -152,259 +173,262 @@ export default {
         this.saveWishlist();
       }
     },
-    // 스토리지 저장 및 동기화 이벤트 발생
     saveWishlist() {
       localStorage.setItem('wishlist', JSON.stringify(this.cartItems));
       window.dispatchEvent(new Event('wishlist-updated'));
     }
   },
   mounted() {
-    // 페이지 진입 시 정렬 상태 적용
     this.sortItems();
   }
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
+/* ----- 기본 레이아웃 ----- */
 .wishlist-page {
   min-height: 100vh;
-  background-color: #ffffff;
-  color: #1a1a1a;
-  font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  font-family: 'Inter', 'Pretendard', sans-serif;
 }
 
-.main-container {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 48px 24px;
-}
-
-/* ----- Hero Section: HomeView 배경색 (#2f3a45) ----- */
+/* ----- 히어로 섹션 ----- */
 .wishlist-hero {
-  background-color: #2f3a45;
-  padding: 80px 0;
+  position: relative;
+  width: 100%;
+  padding: 100px 0 80px;
+  background: radial-gradient(circle at 50% 50%, #25334a 0%, #1e293b 45%, #1a2436 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
   color: #ffffff;
 }
 
+.circuit-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.3; }
+.circuit-line { stroke: #60a5fa; stroke-width: 1.2; }
+.bg-glow { position: absolute; width: 800px; height: 800px; border-radius: 50%; filter: blur(120px); opacity: 0.15; background: #3B82F6; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
 .hero-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 48px;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 40px;
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
-  align-items: center;
 }
 
-.hero-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.2;
-  margin: 0;
+.hero-title { font-size: 48px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+.highlight-blue { color: #3B82F6; }
+.hero-desc { font-size: 17px; color: #94a3b8; margin-top: 15px; line-height: 1.6; }
+
+/* ----- 정렬 셀렉트 (화살표 포함) ----- */
+.modern-select-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
-.accent-count {
-  color: #1976d2;
-  font-size: 24px;
-  vertical-align: top;
-  margin-left: 5px;
+.modern-select-wrapper::after {
+  content: '▼';
+  font-size: 10px;
+  color: #60a5fa;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: transform 0.3s ease;
 }
 
-.hero-desc {
-  font-size: 15px;
-  line-height: 1.6;
-  color: #d9d9d9;
-  margin-top: 16px;
+.modern-select-wrapper:focus-within::after {
+  transform: translateY(-50%) rotate(180deg);
 }
 
-/* ✅ Select 스타일: 옵션 배경색 명시적 지정 */
 .modern-select {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #25334a;
+  color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 12px 40px 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 170px;
   outline: none;
 }
 
-.modern-select option {
-  background-color: #2f3a45; /* 드롭다운 목록 배경색 수정 */
-  color: #fff;
+/* ----- 메인 컨텐츠 ----- */
+.main-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px;
 }
 
-/* ----- Premium Checkbox ----- */
-.modern-checkbox-container, .card-check-overlay {
-  display: flex;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-}
-
-.modern-checkbox-container input, .card-check-overlay input {
-  position: absolute;
-  opacity: 0;
-  width: 0; height: 0;
-}
-
-.checkmark {
-  height: 20px;
-  width: 20px;
-  background-color: #eee;
-  border-radius: 4px;
-  margin-right: 12px;
-  position: relative;
-  transition: 0.2s;
-}
-
-.modern-checkbox-container input:checked ~ .checkmark,
-.card-check-overlay input:checked ~ .checkmark {
-  background-color: #1976d2;
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-  left: 7px; top: 3px;
-  width: 5px; height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.modern-checkbox-container input:checked ~ .checkmark:after,
-.card-check-overlay input:checked ~ .checkmark:after {
-  display: block;
-}
-
-/* ----- Control Bar ----- */
 .control-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 30px;
 }
 
-.btn-action-delete {
-  background: #ff4d4f;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  font-weight: 600;
+.control-left { display: flex; align-items: center; gap: 20px; }
+
+/* ----- 체크박스 공통 ----- */
+.checkmark {
+  display: inline-block;
+  width: 22px; height: 22px;
+  background: #e2e8f0;
   border-radius: 6px;
-  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
 }
 
-/* ----- Wishlist Card ----- */
+.select-all-checkbox input:checked ~ .checkmark,
+.checkmark.checked { background: #3B82F6; }
+
+.checkmark:after {
+  content: ''; position: absolute; display: none;
+  left: 8px; top: 4px; width: 5px; height: 10px;
+  border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+
+.select-all-checkbox input:checked ~ .checkmark:after,
+.checkmark.checked:after { display: block; }
+
+/* ----- 위시리스트 카드 ----- */
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
 }
 
 .wishlist-card {
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 20px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
 }
 
 .wishlist-card:hover {
-  transform: translateY(-4px);
-  border-color: #1976d2;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-8px);
+  border-color: #3B82F6;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
 }
 
-.card-check-overlay {
-  position: absolute;
-  top: 15px; left: 15px;
-  z-index: 10;
+.wishlist-card.is-selected {
+  border-color: #3B82F6;
+  background-color: #f8faff;
 }
+
+.card-check-indicator { position: absolute; top: 20px; left: 20px; z-index: 5; }
 
 .card-image-box {
   width: 100%;
-  height: 120px;
+  height: 180px;
+  background: #f8fafc;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-.card-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
+.card-image { max-width: 80%; max-height: 80%; object-fit: contain; }
 
+/* 상품명 가독성 */
 .item-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
-  color: #2f3a45;
+  color: #1e293b;
   margin-bottom: 12px;
   line-height: 1.4;
-  height: 44px;
+  height: 56px;
+  overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .item-specs {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 20px;
   min-height: 50px;
 }
 
 .spec-tag {
-  font-size: 11px;
-  background: #f1f3f5;
-  color: #495057;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.price-val {
-  font-size: 18px;
-  font-weight: 800;
-  color: #1976d2;
+/* 하단 가격 및 버튼 (정렬 핵심) */
+.item-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: auto;
 }
 
-/* ----- Footer ----- */
-.page-footer {
-  margin-top: 48px;
-  padding-top: 24px;
-  border-top: 1px solid #eee;
-  text-align: center;
-}
+.price-info { display: flex; flex-direction: column; gap: 2px; }
+.price-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+.price-val { font-size: 22px; font-weight: 800; color: #1e293b; }
 
-.btn-clear-all {
-  background: none;
+.shop-btn-premium {
+  background: #3B82F6;
+  color: white;
   border: none;
-  color: #adb5bd;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  text-decoration: underline;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.btn-clear-all:hover {
-  color: #ff4d4f;
+.shop-btn-premium:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
 }
+
+/* ----- 기타 버튼 및 애니메이션 ----- */
+.btn-action-delete {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page-footer { margin-top: 60px; text-align: center; }
+.btn-clear-all { background: none; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; font-size: 14px; }
+
+.animate-fade-up { opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease forwards; }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
-  .hero-inner { flex-direction: column; text-align: center; padding: 40px 20px; }
-  .wishlist-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .hero-title { font-size: 28px; }
+  .hero-inner { flex-direction: column; align-items: center; text-align: center; gap: 30px; }
+  .hero-title { font-size: 36px; }
+  .wishlist-grid { grid-template-columns: 1fr; }
 }
 </style>

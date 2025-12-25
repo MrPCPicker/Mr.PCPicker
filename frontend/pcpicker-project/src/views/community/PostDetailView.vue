@@ -39,6 +39,16 @@
                 <span v-for="spec in laptop.specs" :key="spec" class="spec-tag">{{ spec }}</span>
                 <span v-if="!laptop.specs || laptop.specs.length === 0" class="spec-tag-empty">상세 스펙 정보 없음</span>
               </div>
+              <a 
+                v-if="laptop.shoppingUrl" 
+                :href="laptop.shoppingUrl" 
+                target="_blank"
+                class="shop-link"
+                rel="noopener noreferrer"
+                @click.stop
+              >
+                <i class="fas fa-shopping-cart"></i> 구매 링크
+              </a>
             </div>
           </div>
         </div>
@@ -282,9 +292,32 @@ onMounted(fetchPost);
 .laptop-name-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .laptop-name { font-weight: 700; color: #222; font-size: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .laptop-price { color: #d32f2f; font-weight: 800; font-size: 14px; white-space: nowrap; margin-left: 10px; }
-.laptop-spec-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.laptop-spec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
 .spec-tag { background: #f0f7ff; color: #4a6fa5; font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid #d1e3f8; }
 .spec-tag-empty { color: #bbb; font-size: 12px; }
+
+.shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #1976d2;
+  color: white !important;
+  border-radius: 4px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.shop-link:hover {
+  background-color: #1565c0;
+  text-decoration: none;
+}
+
+.shop-link i {
+  font-size: 12px;
+}
 
 /* 본문 영역 */
 .post-content { min-height: 300px; margin-bottom: 50px; }
