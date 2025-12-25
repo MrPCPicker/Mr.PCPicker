@@ -4,7 +4,7 @@ import axios from 'axios'
 // --------------------
 // 🔧 설정: 여기만 바꿔서 GMS ON/OFF
 // --------------------
-const USE_MOCK = true   // ✅ 실제 GMS를 사용하려면 이 값을 false로 설정 (현재는 개발을 위해 Mock 데이터 사용 중)
+const USE_MOCK = false   // ✅ 실제 GMS를 사용하려면 이 값을 false로 설정 (현재는 개발을 위해 Mock 데이터 사용 중)
 
 // ✅ Django REST API 서버 주소
 const gmsClient = axios.create({
