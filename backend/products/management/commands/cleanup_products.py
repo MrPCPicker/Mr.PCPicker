@@ -1,21 +1,39 @@
 # products/management/commands/cleanup_products.py
 from django.core.management.base import BaseCommand
-from products.models import ProductSearch, ProductDetailRaw, ProductDetailSpec
+from django.db import transaction
+from products.models import ProductDetailSpec
+
+
 class Command(BaseCommand):
-    help = 'Clean up product data by removing specific ranges of records'
+    help = "Delete first N ProductDetailSpec records safely"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--limit",
+            type=int,
+            default=2000,
+            help="How many ProductDetailSpec records to delete (default: 2000)",
+        )
+
+    @transaction.atomic
     def handle(self, *args, **options):
+        limit = options["limit"]
 
-        # Delete ProductSearch records with IDs 451-500
-        # deleted_search = ProductSearch.objects.filter(id__range=(1601, 2000)).delete()
-        # self.stdout.write(self.style.SUCCESS(f'Deleted {deleted_search[0]} ProductSearch records (IDs 1601-2000)'))
+        # ✅ id 기준으로 '처음 N개' 정확히 선택
+        spec_ids = list(
+            ProductDetailSpec.objects
+            .order_by("id")
+            .values_list("id", flat=True)[:limit]
+        )
 
-        # Delete ProductDetailRaw records with IDs 451-490
-        # deleted_detail = ProductDetailRaw.objects.filter(id__range=(1601, 2000)).delete()
-        # self.stdout.write(self.style.SUCCESS(f'Deleted {deleted_detail[0]} ProductDetailRaw records (IDs 1601-2000)'))
+        if not spec_ids:
+            self.stdout.write(self.style.WARNING("⚠️ 삭제할 ProductDetailSpec 데이터가 없습니다."))
+            return
 
-        # Delete ProductDetailRaw records with IDs 451-490
-        deleted_spec = ProductDetailSpec.objects.filter(id__range=(0, 2000)).delete()
-        self.stdout.write(self.style.SUCCESS(f'Deleted {deleted_spec[0]} ProductDetailRaw records (IDs 0-2000)'))
+        deleted_count, _ = ProductDetailSpec.objects.filter(id__in=spec_ids).delete()
 
-
-
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"✅ Deleted {deleted_count} ProductDetailSpec records (first {limit} by id)"
+            )
+        )

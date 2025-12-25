@@ -22,7 +22,8 @@
                   :src="getThumbSrc(item, index)"
                   :alt="item.title || '추천 컴퓨터 목업 이미지'"
                 />
-                <div class="price-tag">{{ formatPrice(item.price) }}</div>
+                <div class="thumb-overlay"></div>
+                <div class="price-tag">{{ formatPrice(item) }}</div>
               </div>
 
               <div class="product-body">
@@ -82,7 +83,8 @@
               </div>
             </template>
 
-            <template v-else>
+            <!-- ✅ 에러일 때는 Needs / Recommend 영역 자체를 숨김 -->
+            <template v-else-if="!error">
               <h4>Needs</h4>
               <ul>
                 <li v-for="(need, nIdx) in needsList" :key="'need-' + nIdx">
@@ -105,7 +107,7 @@
               @click="rewriteSearch"
               :disabled="loading"
             >
-              {{ loading ? 'Loading...' : 'Rewrite' }}
+              {{ loading ? "Loading..." : "Rewrite" }}
             </button>
           </div>
         </div>
@@ -158,6 +160,7 @@ export default {
     ];
 
     const getThumbSrc = (item, index) => {
+      // ✅ 백엔드에서 imageUrl 내려오면 그걸 최우선 사용
       if (item && item.imageUrl) return item.imageUrl;
       return mockImages[index % mockImages.length];
     };
@@ -249,8 +252,11 @@ export default {
           cart.value.push({
             id: item.id,
             title: item.title,
+            // ✅ 표시용/숫자용 둘 다 보존
             price: item.price,
-            imageUrl: item.imageUrl,
+            priceValue: item.priceValue,
+            imageUrl: item.imageUrl || getThumbSrc(item, 0),
+            shoppingUrl: item.shoppingUrl,
             specs: item.specs || [],
           });
         }
@@ -274,10 +280,15 @@ export default {
         const wishlistItem = {
           id: item.id,
           name: item.title,
-          price: item.price,
+          // ✅ SerpApi 가격을 우선 사용(숫자형 있으면 저장)
+          price: item.priceValue ?? item.price,
           quantity: 1,
           image: getThumbSrc(item, index),
+<<<<<<< HEAD
           specs: item.specs || []
+=======
+          shoppingUrl: item.shoppingUrl,
+>>>>>>> origin/dev
         };
         wishlist.push(wishlistItem);
         selectedIds.value.push(item.id);
@@ -378,17 +389,24 @@ export default {
       await rewriteSearch();
     };
 
-    const formatPrice = (price) => {
-      if (price === null || price === undefined || price === "") {
-        return "가격 정보 없음";
+    const formatPrice = (item) => {
+      // ✅ 숫자형(priceValue)이 있으면 그걸로 KRW 포맷
+      const pv = item?.priceValue;
+      if (pv !== null && pv !== undefined && pv !== "" && !Number.isNaN(Number(pv))) {
+        return new Intl.NumberFormat("ko-KR", {
+          style: "currency",
+          currency: "KRW",
+          maximumFractionDigits: 0,
+        }).format(Number(pv));
       }
-      const num = Number(price);
-      if (Number.isNaN(num)) return price;
-      return new Intl.NumberFormat("ko-KR", {
-        style: "currency",
-        currency: "KRW",
-        maximumFractionDigits: 0,
-      }).format(num);
+
+      // ✅ 문자열(price)이 있으면 그대로 보여줌 ("₩1,234,000" 같은 형태)
+      const pt = item?.price;
+      if (pt !== null && pt !== undefined && String(pt).trim() !== "") {
+        return String(pt);
+      }
+
+      return "가격 정보 없음";
     };
 
     onMounted(() => {
@@ -523,13 +541,24 @@ export default {
   object-fit: cover;
 }
 
+.thumb-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+  pointer-events: none;
+}
+
 .price-tag {
   position: absolute;
   bottom: 16px;
   right: 18px;
   font-size: 13px;
   font-weight: 700;
-  color: #4b4b63;
+  color: #ffffff;
+  z-index: 1;
 }
 
 .product-body {
