@@ -9,6 +9,7 @@ import LoginView from '@/views/LoginView.vue'
 import RecommendView from '@/views/RecommendView.vue'
 import PostEditView from '@/views/community/PostEditView.vue'
 import WritePostView from '@/views/community/WritePostView.vue'
+import SearchView from '@/views/SearchView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,6 +59,12 @@ const router = createRouter({
       name: 'cart',
       component: () => import('@/views/CartView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: SearchView,
+      meta: { requiresAuth: false }
     },
     {
       path: '/community/write',

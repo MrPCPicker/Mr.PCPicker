@@ -13,6 +13,7 @@
       <nav class="nav-links">
         <router-link to="/" class="nav-link" exact>Home</router-link>
         <router-link to="/community" class="nav-link">Community</router-link>
+        <router-link to="/search" class="nav-link">Search</router-link>
       </nav>
 
       <div class="nav-actions">
