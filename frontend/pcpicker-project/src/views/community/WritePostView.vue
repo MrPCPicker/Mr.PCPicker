@@ -28,7 +28,7 @@
               <img :src="getItemImage(laptop)" alt="">
             </div>
             <div class="card-mini-info">
-              <span class="card-mini-name">{{ laptop.name }}</span>
+              <span class="card-mini-name">{{ laptop.name || laptop.title || '제품명 없음' }}</span>
               <div class="card-mini-specs">
                 <span v-for="spec in laptop.specs" :key="spec" class="mini-spec-tag">{{ spec }}</span>
               </div>
@@ -47,13 +47,18 @@
             :class="{ 'is-active': isLaptopSelected(laptop.id) }"
             @click="toggleLaptopSelection(laptop)"
           >
-            <div class="select-item-header">
-              <div class="custom-check" :class="{ 'checked': isLaptopSelected(laptop.id) }"></div>
-              <span class="item-name">{{ laptop.name }}</span>
-              <span class="item-price">₩{{ formatPrice(laptop.price) }}</span>
+            <div class="select-item-image">
+              <img :src="getItemImage(laptop)" :alt="laptop.name || laptop.title" class="laptop-thumbnail">
             </div>
-            <div class="item-spec-preview">
-              {{ laptop.specs?.join(' / ') || '상세 정보 없음' }}
+            <div class="select-item-content">
+              <div class="select-item-header">
+                <div class="custom-check" :class="{ 'checked': isLaptopSelected(laptop.id) }"></div>
+                <span class="item-name">{{ laptop.name || laptop.title || '제품명 없음' }}</span>
+                <span class="item-price">₩{{ formatPrice(laptop.price) }}</span>
+              </div>
+              <div class="item-spec-preview">
+                {{ laptop.specs?.join(' / ') || '상세 정보 없음' }}
+              </div>
             </div>
           </div>
           
@@ -141,7 +146,10 @@ onMounted(() => {
 });
 
 const formatPrice = (price) => price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
-const getItemImage = (item) => item.image || item.imageUrl || 'https://via.placeholder.com/100';
+const getItemImage = (item) => {
+  if (!item) return 'https://via.placeholder.com/100';
+  return item.image || item.imageUrl || 'https://via.placeholder.com/100';
+};
 
 const submitPost = async () => {
   // (기존 제출 로직과 동일)
@@ -190,22 +198,62 @@ const submitPost = async () => {
 
 /* 견적 선택 영역 스타일 수정 */
 .laptop-selection-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
   border: 1px solid #e0e4e8;
   border-radius: 12px;
-  max-height: 300px;
-  overflow-y: auto;
   background: #fcfdfe;
 }
 
 .laptop-select-item {
-  padding: 16px;
-  border-bottom: 1px solid #f0f2f4;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
+  background: white;
 }
 
-.laptop-select-item:hover { background: #f1f7ff; }
-.laptop-select-item.is-active { background: #f0f6ff; }
+.select-item-image {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.laptop-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.select-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.laptop-select-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.laptop-select-item.is-active {
+  border-color: #3182ce;
+  background-color: #f7fafc;
+}
 
 .select-item-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .item-name { flex: 1; font-weight: 700; color: #333; font-size: 15px; }

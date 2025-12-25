@@ -140,24 +140,54 @@ const editingId = ref(null);
 const editContent = ref('');
 
 // --- 데이터 헬퍼 함수 ---
-const getItemImage = (item) => item.image || item.imageUrl || 'https://via.placeholder.com/100';
-const formatPrice = (price) => price ? price.toLocaleString() + '원' : '가격 정보 없음';
+const getItemImage = (item) => {
+  if (!item) return 'https://via.placeholder.com/100';
+  return item.image || item.imageUrl || 'https://via.placeholder.com/100?text=No+Image';
+};
+const formatPrice = (price) => {
+  if (price === undefined || price === null) return '가격 정보 없음';
+  return price.toLocaleString() + '원';
+};
 const formatDate = (date) => date ? format(new Date(date), 'yyyy.MM.dd HH:mm', { locale: ko }) : '';
 
-// --- 노트북 목록 매칭 로직 (작성 페이지와 스펙 동기화) ---
+// --- 노트북 목록 매칭 로직 (장바구니 데이터와 동기화) ---
 const displayLaptops = computed(() => {
   const laptopData = post.value.laptops || post.value.selected_laptops || [];
   if (!Array.isArray(laptopData)) return [];
 
+  // 장바구니 데이터 가져오기
   const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
   
   return laptopData.map(item => {
-    // 서버에서 ID만 온 경우 vs 객체가 온 경우 모두 대응
-    const id = (typeof item === 'object') ? item.id : item;
-    const foundInWishlist = savedWishlist.find(l => l.id === id);
+    // 아이템이 객체인지 ID만 있는지 확인
+    const itemId = (typeof item === 'object') ? item.id : item;
     
-    // 위시리스트에 정보가 있다면 스펙/이미지 포함 데이터 반환, 없으면 기본값
-    return foundInWishlist || (typeof item === 'object' ? item : { name: '정보를 불러올 수 없습니다.', price: 0 });
+    // 장바구니에서 해당 아이템 찾기
+    const foundInWishlist = savedWishlist.find(l => l.id === itemId);
+    
+    // 장바구니에 있는 경우
+    if (foundInWishlist) {
+      return {
+        id: foundInWishlist.id,
+        name: foundInWishlist.title || foundInWishlist.name || foundInWishlist.model_name || `PC ${foundInWishlist.id}`,
+        price: foundInWishlist.price || 0,
+        specs: foundInWishlist.specs || [],
+        image: foundInWishlist.image || foundInWishlist.imageUrl || 'https://via.placeholder.com/100',
+        shoppingUrl: foundInWishlist.shoppingUrl || foundInWishlist.url || '#',
+        model_name: foundInWishlist.model_name || ''
+      };
+    }
+    
+    // 장바구니에 없는 경우 (기본값)
+    return {
+      id: item.id || item,
+      name: item.title || item.name || item.model_name || `PC ${item.id || item}`,
+      price: item.price || 0,
+      specs: item.specs || [],
+      image: item.image || item.imageUrl || 'https://via.placeholder.com/100',
+      shoppingUrl: item.shoppingUrl || item.url || '#',
+      model_name: item.model_name || ''
+    };
   });
 });
 

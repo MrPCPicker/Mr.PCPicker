@@ -164,7 +164,7 @@ def recommend_computers(request):
         results = []
         final_products = []
 
-        for p in pool:
+        for p in pool[:10]:
             if len(results) >= 3:
                 break
 

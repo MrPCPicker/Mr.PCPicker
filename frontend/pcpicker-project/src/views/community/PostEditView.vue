@@ -28,7 +28,7 @@
               <img :src="getItemImage(laptop)" alt="laptop">
             </div>
             <div class="card-mini-info">
-              <span class="card-mini-name">{{ laptop.name }}</span>
+              <span class="card-mini-name">{{ laptop.name || laptop.title || `PC ${laptop.id}` }}</span>
               <div class="card-mini-specs">
                 <span v-for="spec in laptop.specs" :key="spec" class="mini-spec-tag">{{ spec }}</span>
               </div>
@@ -47,13 +47,18 @@
             :class="{ 'is-active': isLaptopSelected(laptop.id) }"
             @click="toggleLaptopSelection(laptop)"
           >
-            <div class="select-item-header">
-              <div class="custom-check" :class="{ 'checked': isLaptopSelected(laptop.id) }"></div>
-              <span class="item-name">{{ laptop.name }}</span>
-              <span class="item-price">₩{{ formatPrice(laptop.price) }}</span>
+            <div class="select-item-image">
+              <img :src="getItemImage(laptop)" :alt="laptop.name || laptop.title" class="laptop-thumbnail">
             </div>
-            <div class="item-spec-preview">
-              {{ laptop.specs?.join(' / ') || '상세 정보 없음' }}
+            <div class="select-item-content">
+              <div class="select-item-header">
+                <div class="custom-check" :class="{ 'checked': isLaptopSelected(laptop.id) }"></div>
+                <span class="item-name">{{ laptop.name || laptop.title || '제품명 없음' }}</span>
+                <span class="item-price">₩{{ formatPrice(laptop.price) }}</span>
+              </div>
+              <div class="item-spec-preview">
+                {{ laptop.specs?.join(' / ') || '상세 정보 없음' }}
+              </div>
             </div>
           </div>
           
@@ -118,7 +123,14 @@ const selectedLaptops = ref([]);
 
 // 헬퍼 함수
 const formatPrice = (price) => price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
-const getItemImage = (item) => item.image || item.imageUrl || 'https://via.placeholder.com/100';
+const getItemImage = (item) => {
+  if (!item) return 'https://via.placeholder.com/100';
+  const imageUrl = item.imageUrl || item.image;
+  if (typeof imageUrl === 'object' && imageUrl !== null) {
+    return imageUrl.url || 'https://via.placeholder.com/100';
+  }
+  return imageUrl || 'https://via.placeholder.com/100';
+};
 const isLaptopSelected = (laptopId) => selectedLaptopIds.value.includes(laptopId);
 
 // 노트북 선택 로직
@@ -180,7 +192,30 @@ const fetchPost = async () => {
     if (post.value.category === 'estimate') {
       const ids = post.value.laptops.map(l => (typeof l === 'object' ? l.id : l));
       selectedLaptopIds.value = ids;
-      selectedLaptops.value = wishlist.value.filter(item => ids.includes(item.id));
+      
+      // Find laptops in wishlist first
+      const laptopsFromWishlist = wishlist.value.filter(item => ids.includes(item.id));
+      
+      // If any laptops are missing from wishlist, try to get them from the post data
+      if (laptopsFromWishlist.length < ids.length) {
+        const missingIds = ids.filter(id => !laptopsFromWishlist.some(l => l.id === id));
+        const laptopsFromPost = post.value.laptops
+          .filter(l => {
+            const laptopId = typeof l === 'object' ? l.id : l;
+            return missingIds.includes(laptopId) && typeof l === 'object';
+          })
+          .map(l => ({
+            id: l.id,
+            name: l.name || l.title || `PC ${l.id}`,
+            price: l.price || 0,
+            specs: l.specs || [],
+            image: l.image || l.imageUrl
+          }));
+        
+        selectedLaptops.value = [...laptopsFromWishlist, ...laptopsFromPost];
+      } else {
+        selectedLaptops.value = laptopsFromWishlist;
+      }
     }
 
   } catch (error) {
@@ -230,9 +265,46 @@ onMounted(fetchPost);
 .write-form { background: #fff; padding: 32px; border-radius: 16px; border: 1px solid #eef0f2; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
 .laptop-selection-grid { border: 1px solid #e0e4e8; border-radius: 12px; max-height: 250px; overflow-y: auto; background: #fcfdfe; }
-.laptop-select-item { padding: 14px; border-bottom: 1px solid #f0f2f4; cursor: pointer; transition: 0.2s; }
-.laptop-select-item:hover { background: #f1f7ff; }
-.laptop-select-item.is-active { background: #f0f6ff; }
+.laptop-select-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #f0f2f4;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.select-item-image {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.laptop-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.select-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.laptop-select-item:hover { 
+  background: #f1f7ff; 
+}
+
+.laptop-select-item.is-active { 
+  background: #f0f6ff; 
+}
 
 .select-item-header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .item-name { flex: 1; font-weight: 700; color: #333; font-size: 14px; }
