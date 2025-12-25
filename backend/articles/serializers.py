@@ -27,8 +27,10 @@ class ArticleListSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'content', 'category', 'author',
             'views', 'created_at', 'updated_at',
-            'comment_count', 'like_count'
+            'comment_count', 'like_count',
+            'laptops'  # <-- 여기에 laptops 필드를 추가합니다.
         )
+        # read_only_fields에는 추가하지 않습니다 (프론트에서 값을 보내야 하므로)
         read_only_fields = ('author', 'views', 'likes', 'comment_count', 'like_count')
     
     def get_like_count(self, obj):
@@ -39,9 +41,11 @@ class ArticleListSerializer(serializers.ModelSerializer):
 class ArticleDetailSerializer(ArticleListSerializer):
     comments = CommentSerializer(many=True, read_only=True)
     is_liked = serializers.SerializerMethodField()
+    laptops = serializers.JSONField(required=False, allow_null=True)
 
     class Meta(ArticleListSerializer.Meta):
-        fields = ArticleListSerializer.Meta.fields + ('content', 'comments', 'is_liked')
+        fields = ArticleListSerializer.Meta.fields + ('comments', 'is_liked', 'laptops')
+        read_only_fields = ('laptops',) + ArticleListSerializer.Meta.read_only_fields
     
     def get_is_liked(self, obj):
         request = self.context.get('request')

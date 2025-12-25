@@ -2,12 +2,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthService from '@/services/AuthService'
 import HomeView from '@/views/HomeView.vue'
-import CommunityView from '@/views/CommunityView.vue'
-import PostDetailView from '@/views/PostDetailView.vue'
+import CommunityView from '@/views/community/CommunityView.vue'
+import PostDetailView from '@/views/community/PostDetailView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RecommendView from '@/views/RecommendView.vue'
-import PostEditView from '@/views/PostEditView.vue'   // 🔹 새로 추가
+import PostEditView from '@/views/community/PostEditView.vue'
+import WritePostView from '@/views/community/WritePostView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,15 +54,15 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: '/community/write',
-      name: 'write-post',
-      component: () => import('@/views/WritePostView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/cart',
       name: 'cart',
       component: () => import('@/views/CartView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/community/write',
+      name: 'write-post',
+      component: WritePostView,
       meta: { requiresAuth: true }
     },
     {
