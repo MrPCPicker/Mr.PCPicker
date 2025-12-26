@@ -1,0 +1,126 @@
+{
+  "status": "success",
+  "data": {
+    "_id": "657f7ddd52e5be420719b932",
+    "Product": {
+      "SKU": "MB402B/B",
+      "Category": "Laptops",
+      "Version": "MB402B/B",
+      "Brand": "Apple",
+      "Part Number": null,
+      "Model": "Apple MacBook",
+      "english_id": "657f7ddd52e5be420719b932",
+      "Is Translated": true
+    },
+    "Inside": {
+      "CPU": {
+        "Frequency": "2,1 GHz",
+        "Series": "Intel Core 2 Duo",
+        "Additional Features": ""
+      },
+      "RAM": {
+        "Capacity": "1 GB",
+        "Number of Slots": "2",
+        "Type": "DDR2",
+        "Maximum Capacity": "4 GB"
+      },
+      "GPU": {
+        "Model": "Intel GMA 3100",
+        "Type": "Integrated",
+        "Additional Features": ""
+      },
+      "Storage": {
+        "Total Capacity": "120 GB"
+      },
+      "HDD": {
+        "Speed": "5400 rpm"
+      },
+      "Wireless": {
+        "Bluetooth Version": "Bluetooth 2.0 + EDR",
+        "Additional Features": "Bluetooth",
+        "WiFi Standards": "802.11n (Wi-Fi 4)"
+      },
+      "Wired": {
+        "Ethernet Speed": "1000 Mbit/s",
+        "Additional Features": "LAN Port"
+      },
+      "Ports": {
+        "Number of USB 2,0 Ports": "2",
+        "ExpressCard Type": "-",
+        "Number of Firewire (IEEE 1394) ports": "1",
+        "PC Card Type II": "0",
+        "Additional Features": "DVI, Kensington Slot",
+        "Expansion": ""
+      },
+      "Software": {
+        "Operating System": "Mac OS"
+      },
+      "Sensors": {
+        "Sensors": ""
+      },
+      "Security": {
+        "Features": ""
+      },
+      "Audio": {
+        "Additional Features": ""
+      },
+      "Optical Drive": {
+        "Additional Features": ""
+      },
+      "Battery": {
+        "Additional Features": ""
+      }
+    },
+    "Display": {
+      "Pixel Density": "113 ppi",
+      "Resolution (H x W)": "1280x800",
+      "Diagonal": "13.3 inch",
+      "Aspect Ratio": "16:10",
+      "Additional Features": ""
+    },
+    "No": {
+      "Modem": "Modem",
+      "Infrared": "Infrared",
+      "Docking Station": "Docking Station",
+      "SmartCard": "SmartCard Slot"
+    },
+    "Design": {
+      "Body": {
+        "Weight": "2.27 kg",
+        "Thickness": "27.5 mm",
+        "Height (Shorter Side)": "227.0 mm",
+        "Width (Longer Side)": "325.0 mm",
+        "Additional Features": "",
+        "Width (Longer Side)_mm": 325,
+        "Width (Longer Side)_in": 12.795275590551183,
+        "Height (Shorter Side)_mm": 227,
+        "Height (Shorter Side)_in": 8.93700787401575,
+        "Weight_g": 2270,
+        "Weight_oz": 80.07189362554753,
+        "Weight_lb": 5.004493351596721,
+        "Thickness_mm": 27.5,
+        "Thickness_in": 1.0826771653543308
+      },
+      "Keyboard": {
+        "Additional Features": ""
+      }
+    },
+    "Camera": {
+      "Front Camera": {
+        "Additional Features": ""
+      }
+    },
+    "Metadata": {
+      "Source": "hardwareinf",
+      "ConvertedToUSNumberFormat": true,
+      "ConvertedToMM": true,
+      "translatedDutchToEnglish": true
+    },
+    "english_id": "657f7ddd52e5be420719b932",
+    "Key Aspects": {
+      "RAM": "1 GB",
+      "Storage": "120 GB"
+    },
+    "added_on": "2023-12-17T23:01:49.000Z"
+  }
+}
